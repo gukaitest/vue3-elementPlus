@@ -376,6 +376,28 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'personal-content',
+    path: '/personal-content',
+    component: 'layout.base',
+    meta: {
+      title: '个人内容',
+      // title: 'personal-content',
+      i18nKey: 'route.personal-content',
+      order: 2
+    },
+    children: [
+      {
+        name: 'personal-content_difficulties-presentation',
+        path: '/personal-content/difficulties-presentation',
+        component: 'view.personal-content_difficulties-presentation',
+        meta: {
+          title: 'personal-content_difficulties-presentation',
+          i18nKey: 'route.personal-content_difficulties-presentation'
+        }
+      }
+    ]
+  },
+  {
     name: 'plugin',
     path: '/plugin',
     component: 'layout.base',

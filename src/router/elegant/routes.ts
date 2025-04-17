@@ -381,7 +381,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base',
     meta: {
       title: '个人内容',
-      // title: 'personal-content',
       i18nKey: 'route.personal-content',
       order: 2
     },

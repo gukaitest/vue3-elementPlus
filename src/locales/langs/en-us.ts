@@ -165,6 +165,7 @@ const local: App.I18n.Schema = {
     home: 'Home',
     'personal-content': 'Personal Content',
     'personal-content_difficulties-presentation': 'Difficulties Presentation',
+    'personal-content_select-optimization': 'Select Optimization',
     document: 'Document',
     document_project: 'Project Document',
     'document_project-link': 'Project Document(External Link)',

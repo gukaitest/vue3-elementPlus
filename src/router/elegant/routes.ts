@@ -393,6 +393,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'personal-content_difficulties-presentation',
           i18nKey: 'route.personal-content_difficulties-presentation'
         }
+      },
+      {
+        name: 'personal-content_select-optimization',
+        path: '/personal-content/select-optimization',
+        component: 'view.personal-content_select-optimization',
+        meta: {
+          title: 'personal-content_select-optimization',
+          i18nKey: 'route.personal-content_select-optimization'
+        }
       }
     ]
   },

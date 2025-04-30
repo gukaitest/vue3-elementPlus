@@ -4,6 +4,31 @@
  * All backend api type
  */
 declare namespace Api {
+  /**
+   * namespace products
+   *
+   * backend api module: "products"
+   */
+  namespace productsList {
+    // 使用 interface 定义 Product 类型
+    interface Product {
+      _id: string;
+      product_id: number;
+      product_name: string;
+      price: number;
+      category: string;
+      stock: number;
+      description: string;
+      created_at: string;
+      updated_at: string;
+    }
+
+    // 使用 interface 定义 Data 类型
+    interface ProductInfo {
+      products: Product[];
+      total: number;
+    }
+  }
   namespace Common {
     /** common params of paginating */
     interface PaginatingCommonParams {
@@ -60,6 +85,25 @@ declare namespace Api {
     }
 
     interface UserInfo {
+      userId: string;
+      userName: string;
+      roles: string[];
+      buttons: string[];
+    }
+  }
+  /**
+   * namespace Auth
+   *
+   * backend api module: "auth"
+   */
+  namespace DifficultiesPresentation {
+    interface SelectOptimization {
+      search: string;
+      pageNo: number;
+      pageSize: number;
+    }
+
+    interface LargeFileUpload {
       userId: string;
       userName: string;
       roles: string[];

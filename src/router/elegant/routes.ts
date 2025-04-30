@@ -395,6 +395,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'personal-content_large-file-upload',
+        path: '/personal-content/large-file-upload',
+        component: 'view.personal-content_large-file-upload',
+        meta: {
+          title: 'personal-content_large-file-upload',
+          i18nKey: 'route.personal-content_large-file-upload'
+        }
+      },
+      {
         name: 'personal-content_select-optimization',
         path: '/personal-content/select-optimization',
         component: 'view.personal-content_select-optimization',

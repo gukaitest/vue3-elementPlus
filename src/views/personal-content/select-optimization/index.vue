@@ -1,101 +1,148 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-// import { fetchGetProductList } from '@/service/api';
-
-const states = [
-  'Alabama',
-  'Alaska',
-  'Arizona',
-  'Arkansas',
-  'California',
-  'Colorado',
-  'Connecticut',
-  'Delaware',
-  'Florida',
-  'Georgia',
-  'Hawaii',
-  'Idaho',
-  'Illinois',
-  'Indiana',
-  'Iowa',
-  'Kansas',
-  'Kentucky',
-  'Louisiana',
-  'Maine',
-  'Maryland',
-  'Massachusetts',
-  'Michigan',
-  'Minnesota',
-  'Mississippi',
-  'Missouri',
-  'Montana',
-  'Nebraska',
-  'Nevada',
-  'New Hampshire',
-  'New Jersey',
-  'New Mexico',
-  'New York',
-  'North Carolina',
-  'North Dakota',
-  'Ohio',
-  'Oklahoma',
-  'Oregon',
-  'Pennsylvania',
-  'Rhode Island',
-  'South Carolina',
-  'South Dakota',
-  'Tennessee',
-  'Texas',
-  'Utah',
-  'Vermont',
-  'Virginia',
-  'Washington',
-  'West Virginia',
-  'Wisconsin',
-  'Wyoming'
-];
-const list = states.map((item): ListItem => {
-  return { value: `value:${item}`, label: `label:${item}` };
+import { reactive, ref } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
+import { fetchGetProductList } from '@/service/api';
+const filterInput = ref('');
+const element = ref<Element | null>(null);
+const params = reactive({
+  pageNo: 1,
+  pageSize: 50,
+  total: 51
 });
-
+// const states = [
+//   'Alabama',
+//   'Alaska',
+//   'Arizona',
+//   'Arkansas',
+//   'California',
+//   'Colorado',
+//   'Connecticut',
+//   'Delaware',
+//   'Florida',
+//   'Georgia',
+//   'Hawaii',
+//   'Idaho',
+//   'Illinois',
+//   'Indiana',
+//   'Iowa',
+//   'Kansas',
+//   'Kentucky',
+//   'Louisiana',
+//   'Maine',
+//   'Maryland',
+//   'Massachusetts',
+//   'Michigan',
+//   'Minnesota',
+//   'Mississippi',
+//   'Missouri',
+//   'Montana',
+//   'Nebraska',
+//   'Nevada',
+//   'New Hampshire',
+//   'New Jersey',
+//   'New Mexico',
+//   'New York',
+//   'North Carolina',
+//   'North Dakota',
+//   'Ohio',
+//   'Oklahoma',
+//   'Oregon',
+//   'Pennsylvania',
+//   'Rhode Island',
+//   'South Carolina',
+//   'South Dakota',
+//   'Tennessee',
+//   'Texas',
+//   'Utah',
+//   'Vermont',
+//   'Virginia',
+//   'Washington',
+//   'West Virginia',
+//   'Wisconsin',
+//   'Wyoming'
+// ];
+// const list = states.map((item): ListItem => {
+//   return { value: `value:${item}`, label: `label:${item}` };
+// });
 interface ListItem {
-  value: string;
+  value: number;
   label: string;
 }
-
 const value = ref([]);
 const options = ref<ListItem[]>([]);
 const loading = ref(false);
 
-// async function getUserInfo() {
-//   const { data: info, error } = await fetchGetProductList();
+const getOptionData = async () => {
+  // loading.value = true;
+  await fetchGetProductList({ search: filterInput.value, pageNo: params.pageNo, pageSize: params.pageSize })
+    .then(res => {
+      console.log('res', res);
+      const tempRes =
+        res?.data?.products.map((item): ListItem => {
+          return { value: item.product_id, label: item.product_name };
+        }) ?? [];
+      params.total = res?.data?.total ?? 0;
+      options.value.push(...tempRes);
+    })
+    .finally(() => {
+      // loading.value = false;
+    });
+};
 
-//   if (!error) {
-//     // update store
-//     Object.assign(userInfo, info);
-
-//     return true;
-//   }
-
-//   return false;
-// }
-
-const remoteMethod = (query: string) => {
-  // const res = await fetchGetProductList({ pageNo: 1, pageSize: 10 });
-  // console.log(res);
-
-  if (query !== '') {
-    loading.value = true;
-    setTimeout(() => {
-      loading.value = false;
-      options.value = list.filter(item => {
-        return item.label.toLowerCase().includes(query.toLowerCase());
-      });
-    }, 200);
-  } else {
-    options.value = [];
+const handleScroll = () => {
+  if (element.value) {
+    console.log(
+      'loadMore判断依据',
+      element.value.scrollHeight,
+      element.value.scrollTop,
+      element.value.clientHeight,
+      params.total,
+      params.pageNo,
+      params.pageSize
+    );
+    const loadMore =
+      element.value.scrollHeight - element.value.scrollTop <= element.value.clientHeight &&
+      params.total > params.pageNo * params.pageSize;
+    console.log('loadMore', loadMore);
+    if (loadMore) {
+      params.pageNo += 1;
+      getOptionData();
+    }
   }
 };
+
+const handleFocus = () => {
+  element.value = document.querySelector('.selectRef .el-select-dropdown__list');
+  console.log('element.value', element.value);
+  if (element.value) {
+    element.value.addEventListener('scroll', handleScroll);
+  }
+};
+const remoteMethod = async (query: string) => {
+  filterInput.value = query;
+  params.pageNo = 1;
+  params.pageSize = 50;
+  options.value.splice(0, options.value.length);
+  getOptionData();
+  setTimeout(() => {
+    handleFocus();
+  }, 2000);
+  // const res = await fetchGetProductList({ pageNo: 1, pageSize: 10 });
+  // console.log('res', res);
+
+  // if (query !== '') {
+  //   loading.value = true;
+  //   setTimeout(() => {
+  //     loading.value = false;
+  //     options.value = list.filter(item => {
+  //       return item.label.toLowerCase().includes(query.toLowerCase());
+  //     });
+  //   }, 200);
+  // } else {
+  //   options.value = [];
+  // }
+};
+const debounceRemoteMethod = useDebounceFn(remoteMethod, 500);
 </script>
 
 <template>
@@ -103,16 +150,21 @@ const remoteMethod = (query: string) => {
     <!-- <div class="m-6 text-18px font-semibold">下拉框处理</div> -->
     <ElSelectV2
       v-model="value"
+      popper-class="selectRef"
       class="m-6"
-      style="width: 240px"
+      :popper-append-to-body="false"
       multiple
       filterable
       remote
-      :remote-method="remoteMethod"
+      collapse-tags
+      :max-collapse-tags="3"
+      :remote-method="debounceRemoteMethod"
       clearable
       :options="options"
       :loading="loading"
-      placeholder="Please enter a keyword"
+      placeholder="请输入关键字再选择"
+      style="width: 360px"
+      @focus="handleFocus"
     />
   </div>
 </template>

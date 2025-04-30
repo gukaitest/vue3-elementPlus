@@ -14,7 +14,7 @@ export function createDefaultOptions<ResponseData = any>(options?: Partial<Reque
   };
 
   Object.assign(opts, options);
-
+  console.log('opts', opts);
   return opts;
 }
 

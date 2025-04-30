@@ -166,6 +166,7 @@ const local: App.I18n.Schema = {
     'personal-content': '个人内容',
     'personal-content_difficulties-presentation': '项目难点展示',
     'personal-content_select-optimization': '下拉框优化',
+    'personal-content_large-file-upload': '大文件上传',
     document: '文档',
     document_project: '项目文档',
     'document_project-link': '项目文档(外链)',

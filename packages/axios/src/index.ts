@@ -58,6 +58,7 @@ function createCommonRequest<ResponseData = any>(
       // }
 
       if (opts.isBackendSuccess(response)) {
+        console.log('isBackendSuccess');
         return Promise.resolve(response);
       }
 

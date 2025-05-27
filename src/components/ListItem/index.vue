@@ -161,7 +161,7 @@ defineOptions({ name: 'ListItem' });
   align-items: center;
   flex-shrink: 0;
   flex-basis: 180px;
-  margin-top: -24px;
+  /* margin-top: -24px; */
 }
 .my_btn {
   padding: 2px 10px;

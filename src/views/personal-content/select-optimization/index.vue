@@ -1,14 +1,18 @@
 <script lang="ts" setup>
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { fetchGetProductList } from '@/service/api';
+import { useAppStore } from '@/store/modules/app';
 const filterInput = ref('');
 const element = ref<Element | null>(null);
+const appStore = useAppStore();
 const params = reactive({
   pageNo: 1,
   pageSize: 50,
   total: 51
 });
+const gap = computed(() => (appStore.isMobile ? 0 : 16));
+
 // const states = [
 //   'Alabama',
 //   'Alaska',
@@ -146,27 +150,37 @@ const debounceRemoteMethod = useDebounceFn(remoteMethod, 500);
 </script>
 
 <template>
-  <div class="flex-col-top size-full min-h-420px gap-24px overflow-hidden">
-    <!-- <div class="m-6 text-18px font-semibold">下拉框处理</div> -->
-    <ElSelectV2
-      v-model="value"
-      popper-class="selectRef"
-      class="m-6"
-      :popper-append-to-body="false"
-      multiple
-      filterable
-      remote
-      collapse-tags
-      :max-collapse-tags="3"
-      :remote-method="debounceRemoteMethod"
-      clearable
-      :options="options"
-      :loading="loading"
-      placeholder="请输入关键字再选择"
-      style="width: 360px"
-      @focus="handleFocus"
-    />
-  </div>
+  <ElCard class="card-wrapper">
+    <ElRow :gutter="gap" class="px-8px">
+      <ElCol :md="18" :sm="24">
+        <div class="flex-col-top size-full min-h-420px gap-24px overflow-hidden">
+          <!-- <div class="m-6 text-18px font-semibold">下拉框处理</div> -->
+          <ElSelectV2
+            v-model="value"
+            popper-class="selectRef"
+            class="m-6"
+            :popper-append-to-body="false"
+            multiple
+            filterable
+            remote
+            collapse-tags
+            :max-collapse-tags="3"
+            :remote-method="debounceRemoteMethod"
+            clearable
+            :options="options"
+            :loading="loading"
+            placeholder="请输入关键字再选择"
+            style="width: 240px"
+            @focus="handleFocus"
+          />
+        </div>
+      </ElCol>
+    </ElRow>
+  </ElCard>
 </template>
 
-<style scoped></style>
+<style scoped>
+:deep(.el-card__body) {
+  background-color: #ffffff;
+}
+</style>

@@ -167,6 +167,7 @@ const local: App.I18n.Schema = {
     'personal-content_difficulties-presentation': 'Difficulties Presentation',
     'personal-content_select-optimization': 'Select Optimization',
     'personal-content_large-file-upload': 'large File Upload',
+    'personal-content_image-loading-optimization': 'image Loading Optimization',
     document: 'Document',
     document_project: 'Project Document',
     'document_project-link': 'Project Document(External Link)',

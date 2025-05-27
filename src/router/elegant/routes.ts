@@ -395,6 +395,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'personal-content_image-loading-optimization',
+        path: '/personal-content/image-loading-optimization',
+        component: 'view.personal-content_image-loading-optimization',
+        meta: {
+          title: 'personal-content_image-loading-optimization',
+          i18nKey: 'route.personal-content_image-loading-optimization'
+        }
+      },
+      {
         name: 'personal-content_large-file-upload',
         path: '/personal-content/large-file-upload',
         component: 'view.personal-content_large-file-upload',

@@ -65,6 +65,7 @@ declare module "@elegant-router/types" {
     "multi-menu_second_child_home": "/multi-menu/second/child/home";
     "personal-content": "/personal-content";
     "personal-content_difficulties-presentation": "/personal-content/difficulties-presentation";
+    "personal-content_image-loading-optimization": "/personal-content/image-loading-optimization";
     "personal-content_large-file-upload": "/personal-content/large-file-upload";
     "personal-content_select-optimization": "/personal-content/select-optimization";
     "plugin": "/plugin";
@@ -194,6 +195,7 @@ declare module "@elegant-router/types" {
     | "multi-menu_first_child"
     | "multi-menu_second_child_home"
     | "personal-content_difficulties-presentation"
+    | "personal-content_image-loading-optimization"
     | "personal-content_large-file-upload"
     | "personal-content_select-optimization"
     | "plugin_barcode"

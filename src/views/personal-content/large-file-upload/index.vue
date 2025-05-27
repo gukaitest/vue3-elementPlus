@@ -205,7 +205,7 @@ const uploadSignleFile = (taskArrItem: FileUploadStatus) => {
     fd.append('chunkHash', chunkHash);
     fd.append('chunkSize', String(fileChunkSize));
     fd.append('chunkNumber', String(chunkNumber));
-
+    console.log('单个分片请求', fd);
     try {
       const res = await uploadFile(fd, (onCancelFunc: () => void) => {
         needObj.cancel = onCancelFunc;
@@ -285,7 +285,7 @@ const handleUploadFile = async (e: Event) => {
     // 这里要注意vue2跟vue3不同，
     // 如果在循环 + await中，如果把一个普通对象push进一个响应式数组
     // 直接修改原对象可能不会触发vue的DOM视图更新（但最终值会改变）
-    // 所以这里用了reactive做响应式代理
+    // 所以这里用了reactive做响应式代理,当前要处理的某个文件inTaskArrItem
     const inTaskArrItem = reactive<FileUploadStatus>({
       id: `${new Date().getTime()}${i}`, // 使用时间戳 + 索引作为唯一ID// 因为forEach是同步，所以需要用指定id作为唯一标识
       state: 0, // 0是什么都不做,1文件处理中,2是上传中,3是暂停,4是上传完成,5上传中断，6是上传失败
@@ -299,11 +299,12 @@ const handleUploadFile = async (e: Event) => {
       percentage: 0, // 单个文件上传进度条
       cancel: null // 用于取消切片上传接口
     });
+    // uploadFileList.value要上传的文件列表
     uploadFileList.value.push(inTaskArrItem);
     // 如果不使用reactive，就得使用以下两种方式
     // inTaskArrItem = uploadFileList.value[i]
     // uploadFileList.value[i].state = 2
-    // 开始处理解析文件
+    // 开始处理解析文件，vue3引用传递原理,此时uploadFileList.value里面的对应的inTaskArrItem数据会改变
     inTaskArrItem.state = 1;
 
     if (file.size === 0) {
@@ -411,7 +412,7 @@ const handleUploadFile = async (e: Event) => {
 <template>
   <div class="page">
     <div class="page_top">
-      <p>正在上传 ({{ statistics }})</p>
+      <div>正在上传 ({{ statistics }})</div>
       <div
         class="page_top_right"
         :style="{
@@ -432,7 +433,7 @@ const handleUploadFile = async (e: Event) => {
 
     <div class="bottom_box">
       <div class="input_btn">
-        选择文件上传
+        上传文件
         <input type="file" multiple class="is_input" @change="handleUploadFile" />
       </div>
       <!-- <ElButton type="primary" @change="handleUploadFile">上传</ElButton> -->
@@ -444,10 +445,10 @@ const handleUploadFile = async (e: Event) => {
 <style scoped>
 .page {
   margin: 0 auto;
-  background-color: #28323e;
+  background-color: #ffffff;
   width: 100%;
   height: 100vh;
-  color: #ffffff;
+  color: #000;
   position: relative;
 }
 .page_top {
@@ -463,8 +464,9 @@ const handleUploadFile = async (e: Event) => {
   width: 260px;
   display: flex;
 }
-.page_top > p {
+.page_top div {
   padding: 12px;
+  width: 100%;
 }
 .clear_btn {
   cursor: pointer;
@@ -481,9 +483,10 @@ const handleUploadFile = async (e: Event) => {
   overflow-y: auto;
   height: calc(100vh - 128px);
   border-radius: 14px;
-  background-color: #303944;
+  /* background-color: #303944; */
+  background-color: #fff;
   border: 1px solid #252f3c;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) inset;
+  box-shadow: 0 0 10px rgb(240, 239, 239) inset;
 }
 .bottom_box {
   text-align: center;

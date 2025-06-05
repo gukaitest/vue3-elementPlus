@@ -1,0 +1,1 @@
+import{_ as e}from"./look-forward.vue_vue_type_script_setup_true_lang-_MQ1nR02.js";import{d as n,c as _,o as c}from"./index-DSrCSEjU.js";const p=n({name:"multi-menu_second_child_home",__name:"index",setup(t){return(a,m)=>{const o=e;return c(),_(o)}}});export{p as default};

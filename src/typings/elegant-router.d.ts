@@ -65,9 +65,12 @@ declare module "@elegant-router/types" {
     "multi-menu_second_child_home": "/multi-menu/second/child/home";
     "personal-content": "/personal-content";
     "personal-content_difficulties-presentation": "/personal-content/difficulties-presentation";
+    "personal-content_echarts-optimization": "/personal-content/echarts-optimization";
+    "personal-content_el-select-tree-optimization": "/personal-content/el-select-tree-optimization";
     "personal-content_image-loading-optimization": "/personal-content/image-loading-optimization";
     "personal-content_large-file-upload": "/personal-content/large-file-upload";
     "personal-content_select-optimization": "/personal-content/select-optimization";
+    "personal-content_table-optimization": "/personal-content/table-optimization";
     "plugin": "/plugin";
     "plugin_barcode": "/plugin/barcode";
     "plugin_charts": "/plugin/charts";
@@ -195,9 +198,12 @@ declare module "@elegant-router/types" {
     | "multi-menu_first_child"
     | "multi-menu_second_child_home"
     | "personal-content_difficulties-presentation"
+    | "personal-content_echarts-optimization"
+    | "personal-content_el-select-tree-optimization"
     | "personal-content_image-loading-optimization"
     | "personal-content_large-file-upload"
     | "personal-content_select-optimization"
+    | "personal-content_table-optimization"
     | "plugin_barcode"
     | "plugin_charts_antv"
     | "plugin_charts_echarts"

@@ -96,18 +96,19 @@ const getOptionData = async () => {
 const handleScroll = () => {
   if (element.value) {
     console.log(
-      'loadMore判断依据',
+      'loadMore判断依据,scrollHeight,scrollTop,clientHeight,阈值,total,pageNo,pageSize',
       element.value.scrollHeight,
       element.value.scrollTop,
       element.value.clientHeight,
+      0,
       params.total,
       params.pageNo,
       params.pageSize
     );
     const loadMore =
-      element.value.scrollHeight - element.value.scrollTop <= element.value.clientHeight &&
+      element.value.scrollHeight <= element.value.clientHeight + element.value.scrollTop + 0 &&
       params.total > params.pageNo * params.pageSize;
-    console.log('loadMore', loadMore);
+    console.log('加载更多 loadMore:', loadMore);
     if (loadMore) {
       params.pageNo += 1;
       getOptionData();
@@ -123,6 +124,7 @@ const handleFocus = () => {
   }
 };
 const remoteMethod = async (query: string) => {
+  console.log('query', query);
   filterInput.value = query;
   params.pageNo = 1;
   params.pageSize = 50;

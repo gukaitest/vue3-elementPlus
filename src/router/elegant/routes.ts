@@ -391,7 +391,28 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.personal-content_difficulties-presentation',
         meta: {
           title: 'personal-content_difficulties-presentation',
-          i18nKey: 'route.personal-content_difficulties-presentation'
+          i18nKey: 'route.personal-content_difficulties-presentation',
+          order: 1
+        }
+      },
+      {
+        name: 'personal-content_echarts-optimization',
+        path: '/personal-content/echarts-optimization',
+        component: 'view.personal-content_echarts-optimization',
+        meta: {
+          title: 'personal-content_echarts-optimization',
+          i18nKey: 'route.personal-content_echarts-optimization',
+          order: 7
+        }
+      },
+      {
+        name: 'personal-content_el-select-tree-optimization',
+        path: '/personal-content/el-select-tree-optimization',
+        component: 'view.personal-content_el-select-tree-optimization',
+        meta: {
+          title: 'personal-content_el-select-tree-optimization',
+          i18nKey: 'route.personal-content_el-select-tree-optimization',
+          order: 3
         }
       },
       {
@@ -400,7 +421,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.personal-content_image-loading-optimization',
         meta: {
           title: 'personal-content_image-loading-optimization',
-          i18nKey: 'route.personal-content_image-loading-optimization'
+          i18nKey: 'route.personal-content_image-loading-optimization',
+          order: 5
         }
       },
       {
@@ -409,7 +431,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.personal-content_large-file-upload',
         meta: {
           title: 'personal-content_large-file-upload',
-          i18nKey: 'route.personal-content_large-file-upload'
+          i18nKey: 'route.personal-content_large-file-upload',
+          order: 6
         }
       },
       {
@@ -418,7 +441,18 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.personal-content_select-optimization',
         meta: {
           title: 'personal-content_select-optimization',
-          i18nKey: 'route.personal-content_select-optimization'
+          i18nKey: 'route.personal-content_select-optimization',
+          order: 2
+        }
+      },
+      {
+        name: 'personal-content_table-optimization',
+        path: '/personal-content/table-optimization',
+        component: 'view.personal-content_table-optimization',
+        meta: {
+          title: 'personal-content_table-optimization',
+          i18nKey: 'route.personal-content_table-optimization',
+          order: 4
         }
       }
     ]

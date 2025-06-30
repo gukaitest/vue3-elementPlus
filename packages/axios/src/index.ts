@@ -50,15 +50,15 @@ function createCommonRequest<ResponseData = any>(
 
   instance.interceptors.response.use(
     async response => {
-      const responseType: ResponseType = (response.config?.responseType as ResponseType) || 'json';
-      console.log('response', response);
-      console.log('responseType: ', responseType, opts.isBackendSuccess(response));
+      // const responseType: ResponseType = (response.config?.responseType as ResponseType) || 'json';
+      // console.log('response', response);
+      // console.log('responseType: ', responseType, opts.isBackendSuccess(response));
       // if (responseType !== 'json' || opts.isBackendSuccess(response)) {
       //   return Promise.resolve(response);
       // }
 
       if (opts.isBackendSuccess(response)) {
-        console.log('isBackendSuccess');
+        // console.log('isBackendSuccess');
         return Promise.resolve(response);
       }
 

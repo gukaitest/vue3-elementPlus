@@ -62,7 +62,6 @@ const dataValue = ref<DataValueOption[]>([]);
 const listData = ref<TreeData[]>([]);
 const options = ref<Option[]>([]);
 const selsectOptions = ref<Option[]>([]);
-const defaultExpandedKeys = ref<string[]>([]); // 确保初始值为空数组
 
 // 选择状态
 const select = reactive({
@@ -111,10 +110,17 @@ onMounted(() => {
       });
       // console.log('XXXXXXXXXXXXX res.data.products', res.data.products);
       console.log('XXXXXXXXXXXXX listData.value', listData.value);
+      treeV2.value?.setExpandedKeys(['1']);
     }
   });
 });
-
+// 下拉框显示时，折叠所有节点(解决默认展开所有节点的bug)
+const visibleChange = (visible: boolean) => {
+  console.log('XXXXXXXXXXXXX visible', visible);
+  if (visible) {
+    treeV2.value?.setExpandedKeys([]);
+  }
+};
 // 清空选择
 const clearSelected = () => {
   dataValue.value = [];
@@ -187,6 +193,7 @@ const treeFilter = (query: string, node: TreeNodeData) => {
       :filter-method="selectFilter"
       @clear="clearSelected"
       @change="selectChange"
+      @visible-change="visibleChange"
     >
       <ElOption :value="select.currentNodeKey" :label="select.currentNodeLabel">
         <ElTreeV2
@@ -197,7 +204,8 @@ const treeFilter = (query: string, node: TreeNodeData) => {
           show-checkbox
           :filter-method="treeFilter"
           :default-expand-all="false"
-          :default-expanded-keys="defaultExpandedKeys"
+          :expanded-keys="[]"
+          :auto-expand-parent="false"
           @node-click="nodeClick"
           @check="checkClick"
         ></ElTreeV2>

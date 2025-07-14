@@ -3,7 +3,8 @@ import { ref } from 'vue';
 import type { TabsPaneContext } from 'element-plus';
 
 const activeName = ref('first');
-
+const selectValue = ref([]);
+// const selectValue = ref([{ label: '产品Product-1_001children', value: '1_001' }]);
 const handleClick = (tab: TabsPaneContext, event: Event) => {
   console.log(tab, event);
 };
@@ -12,7 +13,8 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 <template>
   <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
     <ElTabPane label="虚拟SelectTree优化" name="first">
-      <SelectTree v-if="activeName === 'first'"></SelectTree>
+      <SelectTree v-if="activeName === 'first'" v-model:select-value="selectValue"></SelectTree>
+      <div>当前选中的值：{{ selectValue }}</div>
     </ElTabPane>
 
     <!--

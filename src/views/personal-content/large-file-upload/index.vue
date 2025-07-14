@@ -1,7 +1,12 @@
 <script lang="ts" setup>
 import { computed, reactive, ref } from 'vue';
+import { ElMessage } from 'element-plus';
 import { checkFile, mergeChunk, uploadFile } from '@/service/api';
 // import ListItem from '@/components/ListItem/index.vue';
+
+// 文件大小限制常量 (100MB)
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB in bytes
+const MAX_FILE_SIZE_MB = 100; // 100MB for display
 
 interface FileUploadStatus {
   allChunkList: FileChunk[]; // 文件分块列表
@@ -278,9 +283,27 @@ const handleUploadFile = async (e: Event) => {
   }
   const files = fileEle.files;
 
+  // 检查文件大小
+  const oversizedFiles = Array.from(files).filter(file => file.size > MAX_FILE_SIZE);
+  if (oversizedFiles.length > 0) {
+    const fileNames = oversizedFiles.map(file => file.name).join(', ');
+    ElMessage.error(`文件大小超过限制：${fileNames}。请上传小于${MAX_FILE_SIZE_MB}MB的文件。`);
+
+    // 清空文件输入框
+    fileEle.value = '';
+    return false;
+  }
+
   // 多文件
   Array.from(files).forEach(async (item, i) => {
     const file = item;
+
+    // 检查文件大小
+    if (file.size > MAX_FILE_SIZE) {
+      ElMessage.error(`文件 "${file.name}" 大小超过${MAX_FILE_SIZE_MB}MB限制，已跳过上传。`);
+      return false;
+    }
+
     // 单个上传文件
     // 这里要注意vue2跟vue3不同，
     // 如果在循环 + await中，如果把一个普通对象push进一个响应式数组
@@ -411,6 +434,14 @@ const handleUploadFile = async (e: Event) => {
 
 <template>
   <div class="page">
+    <!-- 功能演示提示 -->
+    <div class="demo-notice">
+      <div class="notice-content">
+        <i class="el-icon-info"></i>
+        <span>功能演示：请上传小于{{ MAX_FILE_SIZE_MB }}MB的文件。超过限制的文件将被拒绝上传。</span>
+      </div>
+    </div>
+
     <div class="page_top">
       <div>正在上传 ({{ statistics }})</div>
       <div
@@ -436,6 +467,10 @@ const handleUploadFile = async (e: Event) => {
         上传文件
         <input type="file" multiple class="is_input" @change="handleUploadFile" />
       </div>
+      <div class="file-info">
+        <span>支持格式：任意文件</span>
+        <span>大小限制：{{ MAX_FILE_SIZE_MB }}MB</span>
+      </div>
       <!-- <ElButton type="primary" @change="handleUploadFile">上传</ElButton> -->
       <!-- <ElInput type="file" multiple style="width: 240px" placeholder="Please input" @change="handleUploadFile" /> -->
     </div>
@@ -450,6 +485,34 @@ const handleUploadFile = async (e: Event) => {
   height: 100vh;
   color: #000;
   position: relative;
+}
+
+/* 功能演示提示样式 */
+.demo-notice {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 24px;
+  text-align: center;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notice-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.notice-content i {
+  font-size: 16px;
+  color: #ffd700;
+}
+
+.notice-content span {
+  line-height: 1.4;
 }
 .page_top {
   height: 48px;
@@ -496,7 +559,23 @@ const handleUploadFile = async (e: Event) => {
   height: 80px;
   width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.file-info {
+  display: flex;
+  gap: 20px;
+  font-size: 12px;
+  color: #666;
+}
+
+.file-info span {
+  padding: 4px 8px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
 }
 .input_btn > input {
   position: absolute;

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { PropType } from 'vue';
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import type { TreeKey, TreeNodeData } from 'element-plus';
 import { ElSelect, ElTreeV2 } from 'element-plus';
 import { fetchGetProductList } from '@/service/api';
@@ -38,7 +38,7 @@ interface TreeData extends TreeNodeData {
 // 定义组件props
 const props = defineProps({
   // 是否多选
-  modelValue: {
+  selectValue: {
     type: Array as PropType<DataValueOption[]>, // 关键修正
     default: () => [] // 数组默认值需用工厂函数
   },
@@ -57,8 +57,31 @@ const props = defineProps({
     default: false
   }
 });
-// 重新定义 dataValue
-const dataValue = ref<DataValueOption[]>([]);
+
+// 定义 emits
+const emits = defineEmits(['update:selectValue']);
+
+// 重新定义 dataValue 为 computed
+const dataValue = computed<DataValueOption[]>({
+  get() {
+    console.log('父传子props.selectValue', props.selectValue);
+    return props.selectValue || [];
+  },
+  set(newValue: DataValueOption[]) {
+    console.log('发给父组件的newValue', newValue);
+    emits('update:selectValue', newValue);
+  }
+});
+watch(
+  () => props.selectValue,
+  (newValue: DataValueOption[]) => {
+    dataValue.value = newValue;
+    console.log('接收父组件的newValue', newValue);
+  },
+  {
+    immediate: true
+  }
+);
 const listData = ref<TreeData[]>([]);
 const options = ref<Option[]>([]);
 const selsectOptions = ref<Option[]>([]);
@@ -74,22 +97,19 @@ const treeSelect = ref<InstanceType<typeof ElSelect> | null>(null);
 const treeV2 = ref<InstanceType<typeof ElTreeV2> | null>(null);
 
 // 监听model变化
-watch(
-  () => props.modelValue,
-  (newValue: DataValueOption[]) => {
-    // 多选模式
-    dataValue.value = newValue || [];
-    console.log(props.modelValue, 'props.modelValue');
-  },
-  { immediate: true }
-);
+// watch(
+//   () => props.selectValue,
+//   (newValue: DataValueOption[]) => {
+//     // 多选模式
+//     dataValue.value = newValue || [];
+//   },
+//   { immediate: true }
+// );
 
 // 组件挂载时初始化
 onMounted(() => {
-  console.log(props.modelValue, 'props.modelValue');
   // 多选模式
-  dataValue.value = props.modelValue || [];
-  console.log(props.modelValue, 'props.modelValue');
+  // dataValue.value = props.selectValue || [];
   // 服务端请求数据
   fetchGetProductList({ search: '', pageNo: 1, pageSize: 3000 }).then((res: any) => {
     console.log('XXXXXXXXXXXXXX res', res);
@@ -139,12 +159,13 @@ const checkClick = (data: TreeNodeData, checkedInfo: CheckedInfo) => {
   // 假设checkedInfo.checkedNodes类型为TreeNodeData[]
   dataValue.value = checkedInfo.checkedNodes
     .filter((item: TreeNodeData) => item.level === 2)
-    .map(
-      (item: TreeNodeData): DataValueOption => ({
+    .map((item: TreeNodeData): DataValueOption => {
+      console.log('item', item, item.value);
+      return {
         label: item.label as string, // 类型断言
         value: item.value as string | number // 类型断言
-      })
-    );
+      };
+    });
   console.log('xxxxxxxxxxxxxxx  dataValue.value', dataValue.value);
 };
 // 节点点击处理
@@ -189,7 +210,7 @@ const treeFilter = (query: string, node: TreeNodeData) => {
       multiple
       collapse-tags
       collapse-tags-tooltip
-      :placeholder="placeholder || '请选择'"
+      placeholder="请选择"
       :filter-method="selectFilter"
       @clear="clearSelected"
       @change="selectChange"
@@ -217,9 +238,16 @@ const treeFilter = (query: string, node: TreeNodeData) => {
 <style lang="scss" scoped>
 .select_tree_box {
   width: 100%;
+  max-width: 400px; // 添加最大宽度
+  min-width: 200px; // 添加最小宽度
+}
+:deep(.el-select) {
+  width: 100% !important;
+  max-width: 400px; // 确保select也有最大宽度限制
 }
 :deep(.el-select__selection) {
-  width: 214px;
+  width: 100%; // 改为100%以适应容器
+  max-width: 400px;
 }
 :deep(.el-tag.is-closable) {
   max-width: 130px !important;
@@ -275,6 +303,32 @@ ul li :deep(.el-tree .el-tree-node__content) {
   color: var(--next-main-color);
   .el-icon {
     padding-top: 18px;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .select_tree_box {
+    max-width: 100%; // 在小屏幕上占满宽度
+    min-width: 150px;
+  }
+
+  :deep(.el-select) {
+    max-width: 100%;
+  }
+
+  :deep(.el-select__selection) {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .select_tree_box {
+    min-width: 120px;
+  }
+
+  :deep(.el-tag.is-closable) {
+    max-width: 80px !important; // 在小屏幕上减小标签宽度
   }
 }
 </style>

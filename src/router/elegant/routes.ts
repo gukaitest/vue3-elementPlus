@@ -394,7 +394,7 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'personal-content_difficulties-presentation',
           i18nKey: 'route.personal-content_difficulties-presentation',
           order: 1,
-          icon:'streamline-ultimate:coding-apps-website-detect-virus-monitor-search-bold'
+          icon: 'streamline-ultimate:coding-apps-website-detect-virus-monitor-search-bold'
         }
       },
       {
@@ -405,7 +405,7 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'personal-content_echarts-optimization',
           i18nKey: 'route.personal-content_echarts-optimization',
           order: 7,
-          icon:'solar:chart-bold-duotone'
+          icon: 'solar:chart-bold-duotone'
         }
       },
       {
@@ -416,7 +416,7 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'personal-content_el-select-tree-optimization',
           i18nKey: 'route.personal-content_el-select-tree-optimization',
           order: 3,
-          icon:'lucide:folder-tree'
+          icon: 'lucide:folder-tree'
         }
       },
       {
@@ -427,7 +427,7 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'personal-content_image-loading-optimization',
           i18nKey: 'route.personal-content_image-loading-optimization',
           order: 5,
-          icon:'material-symbols:gallery-thumbnail-outline'
+          icon: 'material-symbols:gallery-thumbnail-outline'
         }
       },
       {
@@ -438,7 +438,7 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'personal-content_large-file-upload',
           i18nKey: 'route.personal-content_large-file-upload',
           order: 6,
-          icon:'material-symbols:upload-file-outline'
+          icon: 'material-symbols:upload-file-outline'
         }
       },
       {
@@ -449,7 +449,7 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'personal-content_select-optimization',
           i18nKey: 'route.personal-content_select-optimization',
           order: 2,
-          icon:'vaadin:combobox'
+          icon: 'vaadin:combobox'
         }
       },
       {
@@ -460,7 +460,7 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'personal-content_table-optimization',
           i18nKey: 'route.personal-content_table-optimization',
           order: 4,
-          icon:'material-symbols:data-table-outline'
+          icon: 'material-symbols:data-table-outline'
         }
       }
     ]

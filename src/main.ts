@@ -6,7 +6,8 @@ import {
   setupIconifyOffline,
   setupLoading,
   setupNProgress,
-  setupUI
+  setupUI,
+  setupWebVitals
 } from './plugins';
 import { setupStore } from './store';
 import { setupRouter } from './router';
@@ -21,6 +22,13 @@ async function setupApp() {
   setupIconifyOffline();
 
   setupDayjs();
+
+  // 初始化Web Vitals性能监控
+  setupWebVitals({
+    enableConsoleLog: true,
+    enableReport: true,
+    reportUrl: '/proxy-default/monitor/webvitals',
+  });
 
   const app = createApp(App);
 

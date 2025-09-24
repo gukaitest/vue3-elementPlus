@@ -1,9 +1,9 @@
-import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 
 export interface WebVitalsData {
   name: string;
   value: number;
-  rating: "good" | "needs-improvement" | "poor";
+  rating: 'good' | 'needs-improvement' | 'poor';
   delta: number;
   id: string;
   navigationType: string;
@@ -70,19 +70,19 @@ export interface WebVitalsConfig {
 // 默认阈值配置，参考Google推荐值
 const DEFAULT_THRESHOLDS = {
   lcp: 2500, // 2.5秒
-  cls: 0.1,  // 0.1
+  cls: 0.1, // 0.1
   fcp: 1800, // 1.8秒
   ttfb: 800, // 800毫秒
-  inp: 200,  // 200毫秒
-  fps: 30,   // 30 FPS
-  longTask: 50, // 50毫秒
+  inp: 200, // 200毫秒
+  fps: 30, // 30 FPS
+  longTask: 50 // 50毫秒
 };
 
 // 默认FPS配置
 const DEFAULT_FPS_CONFIG = {
   duration: 10000, // 10秒
   sampleInterval: 100, // 100ms采样一次
-  enabled: true,
+  enabled: true
 };
 
 // 默认长任务配置
@@ -90,18 +90,18 @@ const DEFAULT_LONG_TASK_CONFIG = {
   enabled: true,
   threshold: 50, // 50ms
   maxTasks: 100, // 最多记录100个长任务
-  includeAttribution: true,
+  includeAttribution: true
 };
 
 // FPS监控器变量
 let fpsMonitor: {
-  startTime: number;           // 监控开始时间（固定不变）
+  startTime: number; // 监控开始时间（固定不变）
   frameCount: number;
   lastTime: number;
   samples: number[];
   isRunning: boolean;
   animationId: number | null;
-  sampleStartTime: number;     // 每次采样的开始时间（用于FPS计算）
+  sampleStartTime: number; // 每次采样的开始时间（用于FPS计算）
 } | null = null;
 
 // 长任务监控器变量
@@ -116,39 +116,39 @@ let longTaskMonitor: {
 } | null = null;
 
 // 获取性能评级
-function getRating(value: number, threshold: number, metric: string = ""): "good" | "needs-improvement" | "poor" {
+function getRating(value: number, threshold: number, metric: string = ''): 'good' | 'needs-improvement' | 'poor' {
   // FPS越高越好，需要特殊处理
-  if (metric === "FPS") {
-    if (value >= 60) return "good";
-    if (value >= 30) return "needs-improvement";
-    return "poor";
+  if (metric === 'FPS') {
+    if (value >= 60) return 'good';
+    if (value >= 30) return 'needs-improvement';
+    return 'poor';
   }
 
   // 长任务数量越少越好
-  if (metric === "LongTask") {
-    if (value <= 5) return "good"; // 5个以下长任务
-    if (value <= 15) return "needs-improvement"; // 15个以下长任务
-    return "poor";
+  if (metric === 'LongTask') {
+    if (value <= 5) return 'good'; // 5个以下长任务
+    if (value <= 15) return 'needs-improvement'; // 15个以下长任务
+    return 'poor';
   }
 
   // 其他指标（LCP、CLS、FCP、TTFB、INP）越小越好
-  if (value <= threshold) return "good";
-  if (value <= threshold * 1.5) return "needs-improvement";
-  return "poor";
+  if (value <= threshold) return 'good';
+  if (value <= threshold * 1.5) return 'needs-improvement';
+  return 'poor';
 }
 
 // 格式化数值
 function formatValue(value: number, metric: string): string {
-  if (metric === "CLS") {
+  if (metric === 'CLS') {
     return value.toFixed(3);
   }
-  if (metric === "INP" || metric === "LongTask") {
+  if (metric === 'INP' || metric === 'LongTask') {
     return `${Math.round(value)}ms`;
   }
-  if (metric === "LCP" || metric === "FCP" || metric === "TTFB") {
+  if (metric === 'LCP' || metric === 'FCP' || metric === 'TTFB') {
     return `${Math.round(value)}ms`;
   }
-  if (metric === "FPS") {
+  if (metric === 'FPS') {
     return `${Math.round(value)}fps`;
   }
   return value.toString();
@@ -161,8 +161,8 @@ function startLongTaskMonitoring(config: WebVitalsConfig) {
   if (!longTaskConfig.enabled) return;
 
   // 检查浏览器是否支持PerformanceObserver和longtask
-  if (!("PerformanceObserver" in window)) {
-    console.warn("PerformanceObserver is not supported in this browser");
+  if (!('PerformanceObserver' in window)) {
+    console.warn('PerformanceObserver is not supported in this browser');
     return;
   }
 
@@ -174,37 +174,37 @@ function startLongTaskMonitoring(config: WebVitalsConfig) {
       totalDuration: 0,
       maxDuration: 0,
       isRunning: true,
-      config: longTaskConfig,
+      config: longTaskConfig
     };
 
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       if (!longTaskMonitor || !longTaskMonitor.isRunning) return;
 
       const entries = list.getEntries();
 
       for (const entry of entries) {
-        if (entry.entryType === "longtask" && entry.duration >= longTaskConfig.threshold) {
+        if (entry.entryType === 'longtask' && entry.duration >= longTaskConfig.threshold) {
           longTaskMonitor.totalTasks++;
           longTaskMonitor.totalDuration += entry.duration;
           longTaskMonitor.maxDuration = Math.max(longTaskMonitor.maxDuration, entry.duration);
 
           const longTaskData: LongTaskData = {
-            name: entry.name || "unknown",
+            name: entry.name || 'unknown',
             duration: entry.duration,
-            startTime: entry.startTime,
+            startTime: entry.startTime
           };
 
           // 如果需要记录详细的任务信息
           if (longTaskConfig.includeAttribution && (entry as any).attribution) {
             longTaskData.attribution = (entry as any).attribution.map((attr: any) => ({
-              name: attr.name || "unknown",
-              entryType: attr.entryType || "unknown",
+              name: attr.name || 'unknown',
+              entryType: attr.entryType || 'unknown',
               startTime: attr.startTime || 0,
               duration: attr.duration || 0,
               containerType: attr.containerType,
               containerSrc: attr.containerSrc,
               containerId: attr.containerId,
-              containerName: attr.containerName,
+              containerName: attr.containerName
             }));
           }
 
@@ -216,12 +216,12 @@ function startLongTaskMonitoring(config: WebVitalsConfig) {
 
           // 实时上报每个长任务
           const data: WebVitalsData = {
-            name: "LongTask",
+            name: 'LongTask',
             value: entry.duration,
-            rating: getRating(entry.duration, longTaskConfig.threshold, "LongTask"),
+            rating: getRating(entry.duration, longTaskConfig.threshold, 'LongTask'),
             delta: 0,
             id: `longtask-${Date.now()}-${Math.random()}`,
-            navigationType: "navigate",
+            navigationType: 'navigate'
           };
 
           // 添加长任务详细信息
@@ -230,7 +230,7 @@ function startLongTaskMonitoring(config: WebVitalsConfig) {
             totalTasks: longTaskMonitor.totalTasks,
             totalDuration: longTaskMonitor.totalDuration,
             averageDuration: longTaskMonitor.totalDuration / longTaskMonitor.totalTasks,
-            maxDuration: longTaskMonitor.maxDuration,
+            maxDuration: longTaskMonitor.maxDuration
           };
 
           if (config.enableConsoleLog) {
@@ -242,12 +242,12 @@ function startLongTaskMonitoring(config: WebVitalsConfig) {
       }
     });
 
-    observer.observe({ entryTypes: ["longtask"] });
+    observer.observe({ entryTypes: ['longtask'] });
     longTaskMonitor.observer = observer;
 
-    console.log("✅ 长任务监控已启动，阈值:", longTaskConfig.threshold, "ms");
+    console.log('✅ 长任务监控已启动，阈值:', longTaskConfig.threshold, 'ms');
   } catch (error) {
-    console.warn("Failed to start long task monitoring:", error);
+    console.warn('Failed to start long task monitoring:', error);
   }
 }
 
@@ -266,28 +266,28 @@ function stopLongTaskMonitoring(config: WebVitalsConfig) {
     const averageDuration = longTaskMonitor.totalDuration / longTaskMonitor.totalTasks;
 
     const summaryData: WebVitalsData = {
-      name: "LongTaskSummary",
+      name: 'LongTaskSummary',
       value: longTaskMonitor.totalTasks,
-      rating: getRating(longTaskMonitor.totalTasks, 10, "LongTask"),
+      rating: getRating(longTaskMonitor.totalTasks, 10, 'LongTask'),
       delta: 0,
       id: `longtask-summary-${Date.now()}`,
-      navigationType: "navigate",
+      navigationType: 'navigate'
     };
 
     // 添加汇总统计信息
     (summaryData as any).longTaskSummary = {
       totalTasks: longTaskMonitor.totalTasks,
       totalDuration: longTaskMonitor.totalDuration,
-      averageDuration: averageDuration,
+      averageDuration,
       maxDuration: longTaskMonitor.maxDuration,
-      tasks: longTaskMonitor.tasks.slice(-10), // 只保留最近10个长任务的详细信息
+      tasks: longTaskMonitor.tasks.slice(-10) // 只保留最近10个长任务的详细信息
     };
 
-    console.log("📊 长任务监控汇总:", {
+    console.log('📊 长任务监控汇总:', {
       totalTasks: longTaskMonitor.totalTasks,
       totalDuration: `${longTaskMonitor.totalDuration.toFixed(2)}ms`,
       averageDuration: `${averageDuration.toFixed(2)}ms`,
-      maxDuration: `${longTaskMonitor.maxDuration.toFixed(2)}ms`,
+      maxDuration: `${longTaskMonitor.maxDuration.toFixed(2)}ms`
     });
 
     handleWebVitalsData(summaryData, config);
@@ -304,17 +304,17 @@ function startFPSMonitoring(config: WebVitalsConfig) {
 
   const now = performance.now();
   fpsMonitor = {
-    startTime: now,              // 监控开始时间（固定）
+    startTime: now, // 监控开始时间（固定）
     frameCount: 0,
     lastTime: now,
     samples: [],
     isRunning: true,
     animationId: null,
-    sampleStartTime: now,        // 采样开始时间（用于FPS计算）
+    sampleStartTime: now // 采样开始时间（用于FPS计算）
   };
 
-  console.log("🎯 开始FPS监控，持续时间:", fpsConfig.duration, "ms");
-  console.log("每100ms采样一次")
+  console.log('🎯 开始FPS监控，持续时间:', fpsConfig.duration, 'ms');
+  console.log('每100ms采样一次');
   const measureFrame = (currentTime: number) => {
     if (!fpsMonitor || !fpsMonitor.isRunning) return;
 
@@ -324,10 +324,10 @@ function startFPSMonitoring(config: WebVitalsConfig) {
     if (currentTime - fpsMonitor.lastTime >= fpsConfig.sampleInterval) {
       // 使用sampleStartTime计算FPS，而不是startTime
       const fps = (fpsMonitor.frameCount * 1000) / (currentTime - fpsMonitor.sampleStartTime);
-      console.log("fps:", fps)
+      // console.log("fps:", fps)
       fpsMonitor.samples.push(fps);
 
-      console.log(`当前FPS: ${fps.toFixed(2)}, 采样数: ${fpsMonitor.samples.length}`);
+      // console.log(`当前FPS: ${fps.toFixed(2)}, 采样数: ${fpsMonitor.samples.length}`);
 
       // 更新采样时间，重置frameCount
       fpsMonitor.lastTime = currentTime;
@@ -358,23 +358,23 @@ function stopFPSMonitoring(config: WebVitalsConfig) {
   if (fpsMonitor.animationId) {
     cancelAnimationFrame(fpsMonitor.animationId);
   }
-  console.log("FPS监控===fpsMonitor.samples:", fpsMonitor.samples);
+  console.log('FPS监控===fpsMonitor.samples:', fpsMonitor.samples);
   // 计算平均FPS
   if (fpsMonitor.samples.length > 0) {
     const averageFPS = fpsMonitor.samples.reduce((sum, fps) => sum + fps, 0) / fpsMonitor.samples.length;
     const minFPS = Math.min(...fpsMonitor.samples);
     const maxFPS = Math.max(...fpsMonitor.samples);
-    console.log("FPS监控===averageFPS:", averageFPS);
-    console.log("FPS监控===minFPS:", minFPS);
-    console.log("FPS监控===maxFPS:", maxFPS);
+    console.log('FPS监控===averageFPS:', averageFPS);
+    console.log('FPS监控===minFPS:', minFPS);
+    console.log('FPS监控===maxFPS:', maxFPS);
     // 使用平均FPS作为主要指标
     const data: WebVitalsData = {
-      name: "FPS",
+      name: 'FPS',
       value: Number(averageFPS.toFixed(2)),
-      rating: getRating(averageFPS, config.thresholds?.fps || DEFAULT_THRESHOLDS.fps, "FPS"),
+      rating: getRating(averageFPS, config.thresholds?.fps || DEFAULT_THRESHOLDS.fps, 'FPS'),
       delta: 0, // FPS没有delta概念
       id: `fps-${Date.now()}`,
-      navigationType: "navigate",
+      navigationType: 'navigate'
     };
 
     // 添加详细FPS统计信息
@@ -382,9 +382,9 @@ function stopFPSMonitoring(config: WebVitalsConfig) {
       average: Number(averageFPS.toFixed(2)),
       min: Number(minFPS.toFixed(2)),
       max: Number(maxFPS.toFixed(2)),
-      samples: fpsMonitor.samples.length,
+      samples: fpsMonitor.samples.length
     };
-    console.log("FPS监控===data:", data);
+    console.log('FPS监控===data:', data);
     handleWebVitalsData(data, config);
   }
 
@@ -400,22 +400,22 @@ function logToConsole(data: WebVitalsData, config: WebVitalsConfig) {
   const formattedDelta = formatValue(delta, name);
 
   const ratingEmoji = {
-    good: "✅",
-    "needs-improvement": "⚠️",
-    poor: "❌"
+    good: '✅',
+    'needs-improvement': '⚠️',
+    poor: '❌'
   };
 
   console.group(`${ratingEmoji[rating]} ${name}: ${formattedValue} (${rating})`);
-  console.log("Value:", formattedValue);
-  console.log("Delta:", formattedDelta);
-  console.log("Rating:", rating);
-  console.log("ID:", data.id);
-  console.log("Navigation Type:", data.navigationType);
+  console.log('Value:', formattedValue);
+  console.log('Delta:', formattedDelta);
+  console.log('Rating:', rating);
+  console.log('ID:', data.id);
+  console.log('Navigation Type:', data.navigationType);
 
   // 如果是FPS，显示详细统计信息
-  if (name === "FPS" && (data as any).fpsStats) {
+  if (name === 'FPS' && (data as any).fpsStats) {
     const stats = (data as any).fpsStats;
-    console.log("FPS Stats:", {
+    console.log('FPS Stats:', {
       average: `${stats.average}fps`,
       min: `${stats.min}fps`,
       max: `${stats.max}fps`,
@@ -424,15 +424,15 @@ function logToConsole(data: WebVitalsData, config: WebVitalsConfig) {
   }
 
   // 如果是长任务，显示任务详细信息
-  if (name === "LongTask" && (data as any).longTaskData) {
+  if (name === 'LongTask' && (data as any).longTaskData) {
     const taskData = (data as any).longTaskData;
     const taskStats = (data as any).longTaskStats;
-    console.log("Long Task Details:", {
+    console.log('Long Task Details:', {
       duration: `${taskData.duration.toFixed(2)}ms`,
       startTime: `${taskData.startTime.toFixed(2)}ms`,
       attribution: taskData.attribution
     });
-    console.log("Long Task Stats:", {
+    console.log('Long Task Stats:', {
       totalTasks: taskStats.totalTasks,
       totalDuration: `${taskStats.totalDuration.toFixed(2)}ms`,
       averageDuration: `${taskStats.averageDuration.toFixed(2)}ms`,
@@ -441,9 +441,9 @@ function logToConsole(data: WebVitalsData, config: WebVitalsConfig) {
   }
 
   // 如果是长任务汇总，显示汇总信息
-  if (name === "LongTaskSummary" && (data as any).longTaskSummary) {
+  if (name === 'LongTaskSummary' && (data as any).longTaskSummary) {
     const summary = (data as any).longTaskSummary;
-    console.log("Long Task Summary:", {
+    console.log('Long Task Summary:', {
       totalTasks: summary.totalTasks,
       totalDuration: `${summary.totalDuration.toFixed(2)}ms`,
       averageDuration: `${summary.averageDuration.toFixed(2)}ms`,
@@ -463,28 +463,28 @@ async function reportData(data: WebVitalsData, config: WebVitalsConfig) {
       config.customReport(data);
       return;
     }
-    console.log("上报数据:",JSON.stringify({
-      ...data,
-      timestamp: Date.now(),
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-    }))
+    // console.log("上报数据:",JSON.stringify({
+    //   ...data,
+    //   timestamp: Date.now(),
+    //   url: window.location.href,
+    //   userAgent: navigator.userAgent,
+    // }))
     if (config.reportUrl) {
-      await fetch("http://localhost:3000/monitor/webvitals", {
-        method: "POST",
+      await fetch('http://localhost:3000/monitor/webvitals', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           ...data,
           timestamp: Date.now(),
           url: window.location.href,
-          userAgent: navigator.userAgent,
-        }),
+          userAgent: navigator.userAgent
+        })
       });
     }
   } catch (error) {
-    console.error("Failed to report Web Vitals data:", error);
+    console.error('Failed to report Web Vitals data:', error);
   }
 }
 
@@ -497,7 +497,7 @@ function handleWebVitalsData(data: WebVitalsData, config: WebVitalsConfig) {
   reportData(data, config);
 
   // 触发自定义事件，供其他模块监听
-  window.dispatchEvent(new CustomEvent("web-vitals", { detail: data }));
+  window.dispatchEvent(new CustomEvent('web-vitals', { detail: data }));
 }
 
 // 设置Web Vitals监控
@@ -508,18 +508,18 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
     thresholds: DEFAULT_THRESHOLDS,
     fpsConfig: DEFAULT_FPS_CONFIG,
     longTaskConfig: DEFAULT_LONG_TASK_CONFIG,
-    ...config,
+    ...config
   };
 
   // 监控LCP (Largest Contentful Paint)
   onLCP((metric: any) => {
     const data: WebVitalsData = {
-      name: "LCP",
+      name: 'LCP',
       value: Number(metric.value.toFixed(2)),
-      rating: getRating(metric.value, finalConfig.thresholds.lcp!, "LCP"),
+      rating: getRating(metric.value, finalConfig.thresholds.lcp!, 'LCP'),
       delta: Number(metric.delta.toFixed(2)),
       id: metric.id,
-      navigationType: metric.navigationType,
+      navigationType: metric.navigationType
     };
     handleWebVitalsData(data, finalConfig);
   });
@@ -527,12 +527,12 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
   // 监控CLS (Cumulative Layout Shift)
   onCLS((metric: any) => {
     const data: WebVitalsData = {
-      name: "CLS",
+      name: 'CLS',
       value: Number(metric.value.toFixed(2)),
-      rating: getRating(metric.value, finalConfig.thresholds.cls!, "CLS"),
+      rating: getRating(metric.value, finalConfig.thresholds.cls!, 'CLS'),
       delta: Number(metric.delta.toFixed(2)),
       id: metric.id,
-      navigationType: metric.navigationType,
+      navigationType: metric.navigationType
     };
     handleWebVitalsData(data, finalConfig);
   });
@@ -540,12 +540,12 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
   // 监控FCP (First Contentful Paint)
   onFCP((metric: any) => {
     const data: WebVitalsData = {
-      name: "FCP",
+      name: 'FCP',
       value: Number(metric.value.toFixed(2)),
-      rating: getRating(metric.value, finalConfig.thresholds.fcp!, "FCP"),
+      rating: getRating(metric.value, finalConfig.thresholds.fcp!, 'FCP'),
       delta: Number(metric.delta.toFixed(2)),
       id: metric.id,
-      navigationType: metric.navigationType,
+      navigationType: metric.navigationType
     };
     handleWebVitalsData(data, finalConfig);
   });
@@ -553,12 +553,12 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
   // 监控TTFB (Time to First Byte)
   onTTFB((metric: any) => {
     const data: WebVitalsData = {
-      name: "TTFB",
+      name: 'TTFB',
       value: Number(metric.value.toFixed(2)),
-      rating: getRating(metric.value, finalConfig.thresholds.ttfb!, "TTFB"),
+      rating: getRating(metric.value, finalConfig.thresholds.ttfb!, 'TTFB'),
       delta: Number(metric.delta.toFixed(2)),
       id: metric.id,
-      navigationType: metric.navigationType,
+      navigationType: metric.navigationType
     };
     handleWebVitalsData(data, finalConfig);
   });
@@ -566,12 +566,12 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
   // 监控INP (Interaction to Next Paint) - 替代FID的新指标
   onINP((metric: any) => {
     const data: WebVitalsData = {
-      name: "INP",
+      name: 'INP',
       value: Number(metric.value.toFixed(2)),
-      rating: getRating(metric.value, finalConfig.thresholds.inp!, "INP"),
+      rating: getRating(metric.value, finalConfig.thresholds.inp!, 'INP'),
       delta: Number(metric.delta.toFixed(2)),
       id: metric.id,
-      navigationType: metric.navigationType,
+      navigationType: metric.navigationType
     };
     handleWebVitalsData(data, finalConfig);
   });
@@ -582,12 +582,12 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
   // 启动FPS监控（可选）
   // startFPSMonitoring(finalConfig);
 
-  console.log("🚀 Web Vitals monitoring initialized (including Long Tasks and FPS)");
+  console.log('🚀 Web Vitals monitoring initialized (including Long Tasks and FPS)');
 }
 
 // 获取当前页面的Web Vitals数据
 export function getCurrentWebVitals(): Promise<WebVitalsData[]> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const metrics: WebVitalsData[] = [];
     let count = 0;
     const totalMetrics = 6; // LCP, CLS, FCP, TTFB, INP, FPS
@@ -602,12 +602,12 @@ export function getCurrentWebVitals(): Promise<WebVitalsData[]> {
     // 收集LCP
     onLCP((metric: any) => {
       metrics.push({
-        name: "LCP",
+        name: 'LCP',
         value: Number(metric.value.toFixed(2)),
-        rating: getRating(metric.value, DEFAULT_THRESHOLDS.lcp!, "LCP"),
+        rating: getRating(metric.value, DEFAULT_THRESHOLDS.lcp!, 'LCP'),
         delta: Number(metric.delta.toFixed(2)),
         id: metric.id,
-        navigationType: metric.navigationType,
+        navigationType: metric.navigationType
       });
       checkComplete();
     });
@@ -615,12 +615,12 @@ export function getCurrentWebVitals(): Promise<WebVitalsData[]> {
     // 收集CLS
     onCLS((metric: any) => {
       metrics.push({
-        name: "CLS",
+        name: 'CLS',
         value: Number(metric.value.toFixed(2)),
-        rating: getRating(metric.value, DEFAULT_THRESHOLDS.cls!, "CLS"),
+        rating: getRating(metric.value, DEFAULT_THRESHOLDS.cls!, 'CLS'),
         delta: Number(metric.delta.toFixed(2)),
         id: metric.id,
-        navigationType: metric.navigationType,
+        navigationType: metric.navigationType
       });
       checkComplete();
     });
@@ -628,12 +628,12 @@ export function getCurrentWebVitals(): Promise<WebVitalsData[]> {
     // 收集FCP
     onFCP((metric: any) => {
       metrics.push({
-        name: "FCP",
+        name: 'FCP',
         value: Number(metric.value.toFixed(2)),
-        rating: getRating(metric.value, DEFAULT_THRESHOLDS.fcp!, "FCP"),
+        rating: getRating(metric.value, DEFAULT_THRESHOLDS.fcp!, 'FCP'),
         delta: Number(metric.delta.toFixed(2)),
         id: metric.id,
-        navigationType: metric.navigationType,
+        navigationType: metric.navigationType
       });
       checkComplete();
     });
@@ -641,12 +641,12 @@ export function getCurrentWebVitals(): Promise<WebVitalsData[]> {
     // 收集TTFB
     onTTFB((metric: any) => {
       metrics.push({
-        name: "TTFB",
+        name: 'TTFB',
         value: Number(metric.value.toFixed(2)),
-        rating: getRating(metric.value, DEFAULT_THRESHOLDS.ttfb!, "TTFB"),
+        rating: getRating(metric.value, DEFAULT_THRESHOLDS.ttfb!, 'TTFB'),
         delta: Number(metric.delta.toFixed(2)),
         id: metric.id,
-        navigationType: metric.navigationType,
+        navigationType: metric.navigationType
       });
       checkComplete();
     });
@@ -654,12 +654,12 @@ export function getCurrentWebVitals(): Promise<WebVitalsData[]> {
     // 收集INP
     onINP((metric: any) => {
       metrics.push({
-        name: "INP",
+        name: 'INP',
         value: metric.value,
-        rating: getRating(metric.value, DEFAULT_THRESHOLDS.inp!, "INP"),
+        rating: getRating(metric.value, DEFAULT_THRESHOLDS.inp!, 'INP'),
         delta: metric.delta,
         id: metric.id,
-        navigationType: metric.navigationType,
+        navigationType: metric.navigationType
       });
       checkComplete();
     });
@@ -671,15 +671,16 @@ export function getCurrentWebVitals(): Promise<WebVitalsData[]> {
     const measureFPS = (currentTime: number) => {
       fpsFrameCount++;
 
-      if (currentTime - fpsStartTime >= 1000) { // 1秒内计算FPS
+      if (currentTime - fpsStartTime >= 1000) {
+        // 1秒内计算FPS
         const fps = (fpsFrameCount * 1000) / (currentTime - fpsStartTime);
         metrics.push({
-          name: "FPS",
+          name: 'FPS',
           value: Number(fps.toFixed(2)),
-          rating: getRating(fps, DEFAULT_THRESHOLDS.fps, "FPS"),
+          rating: getRating(fps, DEFAULT_THRESHOLDS.fps, 'FPS'),
           delta: 0,
           id: `fps-${Date.now()}`,
-          navigationType: "navigate",
+          navigationType: 'navigate'
         });
         checkComplete();
       } else {
@@ -698,9 +699,9 @@ export function startFPSMonitor(config: WebVitalsConfig = {}) {
     enableReport: true, // 修改为true，确保数据上报
     thresholds: DEFAULT_THRESHOLDS,
     fpsConfig: DEFAULT_FPS_CONFIG,
-    ...config, // 确保用户配置能够覆盖默认值
+    ...config // 确保用户配置能够覆盖默认值
   };
-  console.log("🎯 finalConfig:", finalConfig);
+  console.log('🎯 finalConfig:', finalConfig);
   startFPSMonitoring(finalConfig);
 }
 
@@ -714,12 +715,12 @@ export function stopFPSMonitor() {
       const maxFPS = Math.max(...fpsMonitor.samples);
 
       const data: WebVitalsData = {
-        name: "FPS",
+        name: 'FPS',
         value: Number(averageFPS.toFixed(2)),
-        rating: getRating(averageFPS, DEFAULT_THRESHOLDS.fps, "FPS"),
+        rating: getRating(averageFPS, DEFAULT_THRESHOLDS.fps, 'FPS'),
         delta: 0,
         id: `fps-${Date.now()}`,
-        navigationType: "navigate",
+        navigationType: 'navigate'
       };
 
       // 添加详细FPS统计信息
@@ -727,7 +728,7 @@ export function stopFPSMonitor() {
         average: Number(averageFPS.toFixed(2)),
         min: Number(minFPS.toFixed(2)),
         max: Number(maxFPS.toFixed(2)),
-        samples: fpsMonitor.samples.length,
+        samples: fpsMonitor.samples.length
       };
 
       // 使用默认配置进行数据上报
@@ -735,7 +736,7 @@ export function stopFPSMonitor() {
         enableConsoleLog: true,
         enableReport: true,
         thresholds: DEFAULT_THRESHOLDS,
-        reportUrl: "http://localhost:3000/monitor/webvitals",
+        reportUrl: 'http://localhost:3000/monitor/webvitals'
       };
 
       handleWebVitalsData(data, defaultConfig);
@@ -757,9 +758,9 @@ export function startLongTaskMonitor(config: WebVitalsConfig = {}) {
     enableReport: true,
     thresholds: DEFAULT_THRESHOLDS,
     longTaskConfig: DEFAULT_LONG_TASK_CONFIG,
-    ...config,
+    ...config
   };
-  console.log("🔍 启动长任务监控，配置:", finalConfig.longTaskConfig);
+  console.log('🔍 启动长任务监控，配置:', finalConfig.longTaskConfig);
   startLongTaskMonitoring(finalConfig);
 }
 
@@ -769,7 +770,7 @@ export function stopLongTaskMonitor() {
     enableConsoleLog: true,
     enableReport: true,
     thresholds: DEFAULT_THRESHOLDS,
-    reportUrl: "http://localhost:3000/monitor/webvitals",
+    reportUrl: 'http://localhost:3000/monitor/webvitals'
   };
   stopLongTaskMonitoring(defaultConfig);
 }
@@ -785,6 +786,6 @@ export function getLongTaskStats() {
     totalDuration: longTaskMonitor.totalDuration,
     averageDuration: longTaskMonitor.totalTasks > 0 ? longTaskMonitor.totalDuration / longTaskMonitor.totalTasks : 0,
     maxDuration: longTaskMonitor.maxDuration,
-    recentTasks: longTaskMonitor.tasks.slice(-5), // 最近5个任务
+    recentTasks: longTaskMonitor.tasks.slice(-5) // 最近5个任务
   };
 }

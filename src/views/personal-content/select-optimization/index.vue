@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { computed, reactive, ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
+import { setupWebVitals, startFPSMonitor, stopFPSMonitor, stopLongTaskMonitor } from '@/plugins/web-vitals';
 import { fetchGetProductList } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-import { startFPSMonitor, stopFPSMonitor, setupWebVitals, startLongTaskMonitor, stopLongTaskMonitor, getLongTaskStats } from '@/plugins/web-vitals';
 
 const filterInput = ref('');
 const element = ref<Element | null>(null);
@@ -21,12 +21,12 @@ const fpsConfig = {
   enableReport: true, // 启用数据上报
   reportUrl: 'http://localhost:3000/monitor/webvitals', // 上报URL
   thresholds: {
-    fps: 30, // 30fps作为基准
+    fps: 30 // 30fps作为基准
   },
   fpsConfig: {
     duration: 2000, // 监控2秒（足够覆盖API请求和渲染时间）
     sampleInterval: 100, // 100ms采样一次
-    enabled: true,
+    enabled: true
   }
 };
 
@@ -51,11 +51,12 @@ const options = ref<ListItem[]>([]);
 const loading = ref(false);
 
 const getOptionData = async () => {
-  loading.value = true;
+  // 不能添加loading，因为会导致下拉框刷新，无法触发remote-method
+  // loading.value = true;
 
   try {
     // 开始FPS监控
-    console.log('🚀 11111111111111开始监控下拉框API请求和渲染FPS...');
+    console.log('🚀 开始监控下拉框API请求和渲染FPS...');
     startFPSMonitor(fpsConfig);
 
     await fetchGetProductList({
@@ -72,8 +73,7 @@ const getOptionData = async () => {
       options.value.push(...tempRes);
     });
   } finally {
-    loading.value = false;
-
+    // loading.value = false;
     // 等待DOM更新完成后停止FPS监控
     // await nextTick();
     // setTimeout(() => {
@@ -108,7 +108,7 @@ const handleScroll = () => {
 
 const handleFocus = () => {
   element.value = document.querySelector('.selectRef .el-select-dropdown__list');
-  console.log('element.value', element.value);
+  // console.log('element.value', element.value);
   if (element.value) {
     element.value.addEventListener('scroll', handleScroll);
   }
@@ -142,8 +142,8 @@ onMounted(() => {
       enabled: true,
       threshold: 50,
       maxTasks: 100,
-      includeAttribution: true,
-    },
+      includeAttribution: true
+    }
   });
 });
 

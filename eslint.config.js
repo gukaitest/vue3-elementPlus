@@ -18,7 +18,11 @@ export default defineConfig(
           ignores: ['/^icon-/']
         }
       ],
-      'unocss/order-attributify': 'off'
+      'unocss/order-attributify': 'off',
+      'no-console': 'off',
+      'no-plusplus': 'off',
+      'no-unused-vars': 'off',
+      'vue/no-inline-styles': 'off'
     }
   }
 );

@@ -4,11 +4,7 @@
  * All backend api type
  */
 declare namespace Api {
-  /**
-   * namespace products
-   *
-   * backend api module: "products"
-   */
+  /** namespace products 接口返回类型 backend api module: "products" */
   namespace productsList {
     // 使用 interface 定义 Product 类型
     interface Product {
@@ -22,10 +18,34 @@ declare namespace Api {
       created_at: string;
       updated_at: string;
     }
-
     // 使用 interface 定义 Data 类型
     interface ProductInfo {
       products: Product[];
+      total: number;
+    }
+    // 使用 interface 定义 Data 类型
+  }
+  namespace performanceOptimization {
+    // 对应的后端字段如下：summaryData	_id	name	value	rating	delta	id	navigationType	timestamp	url	userAgent	taskType	leakType	created_at	__v
+    interface performanceOptimization {
+      name?: string;
+      _id?: string;
+      value?: string;
+      rating?: string;
+      delta?: string;
+      // id?: string;
+      navigationType?: string;
+      timestamp?: string;
+      url?: string;
+      userAgent?: string;
+      taskType?: string;
+      leakType?: string;
+      created_at?: string;
+      // summaryData: string;
+      __v?: string;
+    }
+    interface performanceOptimizationList {
+      list: performanceOptimization[];
       total: number;
     }
   }
@@ -94,11 +114,17 @@ declare namespace Api {
   /**
    * namespace Auth
    *
-   * backend api module: "auth"
+   * backend api module: "auth" 请求参数
    */
   namespace DifficultiesPresentation {
     interface SelectOptimization {
       search: string;
+      pageNo: number;
+      pageSize: number;
+    }
+    interface performanceOptimization {
+      name?: string;
+      rating?: string;
       pageNo: number;
       pageSize: number;
     }

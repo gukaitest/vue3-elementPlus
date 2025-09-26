@@ -171,6 +171,7 @@ const local: App.I18n.Schema = {
     'personal-content_table-optimization': 'table性能优化',
     'personal-content_echarts-optimization': 'echarts优化',
     'personal-content_el-select-tree-optimization': '下拉树优化',
+    'personal-content_frontendmonitoring': '前端监控',
     document: '文档',
     document_project: '项目文档',
     'document_project-link': '项目文档(外链)',

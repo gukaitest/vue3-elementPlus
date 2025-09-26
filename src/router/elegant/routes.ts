@@ -394,7 +394,7 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'personal-content_difficulties-presentation',
           i18nKey: 'route.personal-content_difficulties-presentation',
           order: 1,
-          icon: 'streamline-ultimate:coding-apps-website-detect-virus-monitor-search-bold'
+          icon: 'material-symbols:important-devices-outline'
         }
       },
       {
@@ -417,6 +417,17 @@ export const generatedRoutes: GeneratedRoute[] = [
           i18nKey: 'route.personal-content_el-select-tree-optimization',
           order: 3,
           icon: 'lucide:folder-tree'
+        }
+      },
+      {
+        name: 'personal-content_frontendmonitoring',
+        path: '/personal-content/frontendmonitoring',
+        component: 'view.personal-content_frontendmonitoring',
+        meta: {
+          title: 'personal-content_frontendmonitoring',
+          i18nKey: 'route.personal-content_frontendmonitoring',
+          order: 8,
+          icon: 'streamline-ultimate:coding-apps-website-detect-virus-monitor-search-bold'
         }
       },
       {

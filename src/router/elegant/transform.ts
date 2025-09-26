@@ -213,6 +213,7 @@ const routeMap: RouteMap = {
   "personal-content_difficulties-presentation": "/personal-content/difficulties-presentation",
   "personal-content_echarts-optimization": "/personal-content/echarts-optimization",
   "personal-content_el-select-tree-optimization": "/personal-content/el-select-tree-optimization",
+  "personal-content_frontendmonitoring": "/personal-content/frontendmonitoring",
   "personal-content_image-loading-optimization": "/personal-content/image-loading-optimization",
   "personal-content_large-file-upload": "/personal-content/large-file-upload",
   "personal-content_select-optimization": "/personal-content/select-optimization",

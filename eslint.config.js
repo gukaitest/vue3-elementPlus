@@ -22,7 +22,11 @@ export default defineConfig(
       'no-console': 'off',
       'no-plusplus': 'off',
       'no-unused-vars': 'off',
-      'vue/no-inline-styles': 'off'
+      'vue/no-inline-styles': 'off',
+      // 允许嵌套三元表达式
+      'no-nested-ternary': 'off',
+      // 循环复杂度最大值设为 24
+      complexity: ['error', { max: 24 }]
     }
   }
 );

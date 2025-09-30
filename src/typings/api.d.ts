@@ -138,6 +138,171 @@ declare namespace Api {
   }
 
   /**
+   * namespace ErrorMonitor
+   *
+   * backend api module: "errorMonitor"
+   */
+  namespace ErrorMonitor {
+    /** 错误类型枚举 */
+    type ErrorType = 'javascript' | 'vue' | 'promise' | 'resource' | 'ajax' | 'custom';
+
+    /** 错误级别枚举 */
+    type ErrorLevel = 'low' | 'medium' | 'high' | 'critical';
+
+    /** 错误信息接口 */
+    interface ErrorInfo {
+      // 基础信息
+      type: ErrorType;
+      level?: ErrorLevel;
+      message: string;
+      stack?: string;
+      filename?: string;
+      lineno?: number;
+      colno?: number;
+
+      // 上下文信息
+      url: string;
+      userAgent: string;
+      timestamp: number;
+      userId?: string;
+      sessionId?: string;
+
+      // Vue组件相关
+      componentName?: string;
+      componentStack?: string;
+      propsData?: any;
+      route?: string;
+      routeParams?: any;
+      routeQuery?: any;
+
+      // 资源错误信息
+      resourceType?: string;
+      resourceUrl?: string;
+
+      // 请求错误信息
+      requestUrl?: string;
+      requestMethod?: string;
+      requestData?: any;
+      responseStatus?: number;
+      responseData?: any;
+
+      // 自定义信息
+      customData?: any;
+
+      // 错误ID（用于去重）
+      errorId?: string;
+
+      // 数据库字段
+      _id?: string;
+      created_at?: string;
+      updated_at?: string;
+      __v?: number;
+    }
+
+    /** 错误列表查询参数 */
+    interface ErrorSearchParams {
+      /** 错误类型 */
+      type?: ErrorType;
+      /** 错误级别 */
+      level?: ErrorLevel;
+      /** 错误消息关键词 */
+      message?: string;
+      /** 用户ID */
+      userId?: string;
+      /** 会话ID */
+      sessionId?: string;
+      /** 开始时间戳 */
+      startTime?: number;
+      /** 结束时间戳 */
+      endTime?: number;
+      /** 当前页码 */
+      pageNo: number;
+      /** 页面大小 */
+      pageSize: number;
+    }
+
+    /** 错误列表响应数据 */
+    interface ErrorList {
+      list: ErrorInfo[];
+      total: number;
+    }
+
+    /** 错误统计信息 */
+    interface ErrorStats {
+      /** 总错误数 */
+      total: number;
+      /** 按类型统计 */
+      byType: Record<ErrorType, number>;
+      /** 按级别统计 */
+      byLevel: Record<ErrorLevel, number>;
+      /** 最近错误列表 */
+      recent: ErrorInfo[];
+    }
+
+    /** 错误上报请求数据 */
+    interface ErrorReportRequest {
+      /** 错误信息 */
+      errorInfo: ErrorInfo;
+      /** 全局自定义数据 */
+      customData?: any;
+    }
+
+    /** 后端接口错误数据格式（与 ErrorInfo 保持一致） */
+    interface ErrorReportData extends ErrorInfo {
+      // 继承 ErrorInfo 的所有字段
+      // 如果需要额外的字段，可以在这里添加
+    }
+
+    /** 错误上报响应数据 */
+    interface ErrorReportResponse {
+      /** 是否成功 */
+      success: boolean;
+      /** 错误ID */
+      errorId: string;
+      /** 消息 */
+      message?: string;
+    }
+
+    /** 批量错误上报请求数据 */
+    interface BatchErrorReportRequest {
+      /** 错误信息列表 */
+      errors: ErrorInfo[];
+      /** 全局自定义数据 */
+      customData?: any;
+    }
+
+    /** 错误监控配置 */
+    interface ErrorMonitorConfig {
+      /** 是否启用控制台日志 */
+      enableConsoleLog?: boolean;
+      /** 是否启用上报 */
+      enableReport?: boolean;
+      /** 上报URL */
+      reportUrl?: string;
+      /** 自定义上报函数 */
+      customReport?: (errorInfo: ErrorInfo) => void;
+      /** 忽略的错误模式 */
+      ignoreErrors?: (string | RegExp)[];
+      /** 忽略的URL模式 */
+      ignoreUrls?: (string | RegExp)[];
+      /** 最大错误数量 */
+      maxErrors?: number;
+      /** 采样率 */
+      sampleRate?: number;
+      /** 用户ID */
+      userId?: string;
+      /** 会话ID */
+      sessionId?: string;
+      /** 自定义数据 */
+      customData?: any;
+      /** 错误级别配置 */
+      levelConfig?: {
+        [key in ErrorType]?: ErrorLevel;
+      };
+    }
+  }
+
+  /**
    * namespace Route
    *
    * backend api module: "route"

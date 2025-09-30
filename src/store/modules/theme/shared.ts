@@ -1,10 +1,10 @@
 import { defu } from 'defu';
 import { addColorAlpha, getColorPalette, getPaletteColorByNumber, getRgb } from '@sa/color';
-import { overrideThemeSettings, themeSettings } from '@/theme/settings';
-import { themeVars } from '@/theme/vars';
+import { DARK_CLASS } from '@/constants/app';
 import { toggleHtmlClass } from '@/utils/common';
 import { localStg } from '@/utils/storage';
-import { DARK_CLASS } from '@/constants/app';
+import { overrideThemeSettings, themeSettings } from '@/theme/settings';
+import { themeVars } from '@/theme/vars';
 
 /** Init theme settings */
 export function initThemeSettings() {

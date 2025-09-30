@@ -1,5 +1,6 @@
 import type { AxiosResponse } from 'axios';
 import { BACKEND_ERROR_CODE, createFlatRequest, createRequest } from '@sa/axios';
+import { ErrorLevel, ErrorType, reportCustomError } from '@/plugins/error-monitor';
 import { useAuthStore } from '@/store/modules/auth';
 import { localStg } from '@/utils/storage';
 import { getServiceBaseURL } from '@/utils/service';
@@ -117,6 +118,23 @@ export const request = createFlatRequest<App.Service.Response, RequestInstanceSt
         backendErrorCode = String(error.response?.data?.code || '');
       }
 
+      // 上报Axios错误到错误监控系统
+      reportCustomError(
+        `Axios Request Error: ${message}`,
+        {
+          requestUrl: error.config?.url,
+          requestMethod: error.config?.method,
+          requestData: error.config?.data,
+          responseStatus: error.response?.status,
+          responseData: error.response?.data,
+          backendErrorCode,
+          errorCode: error.code,
+          timeout: error.code === 'ECONNABORTED',
+          networkError: !error.response
+        },
+        ErrorLevel.MEDIUM
+      );
+
       // the error message is displayed in the modal
       const modalLogoutCodes = import.meta.env.VITE_SERVICE_MODAL_LOGOUT_CODES?.split(',') || [];
       if (modalLogoutCodes.includes(backendErrorCode)) {
@@ -170,6 +188,22 @@ export const demoRequest = createRequest<App.Service.DemoResponse>(
       if (error.code === BACKEND_ERROR_CODE) {
         message = error.response?.data?.message || message;
       }
+
+      // 上报Demo请求错误到错误监控系统
+      reportCustomError(
+        `Demo Request Error: ${message}`,
+        {
+          requestUrl: error.config?.url,
+          requestMethod: error.config?.method,
+          requestData: error.config?.data,
+          responseStatus: error.response?.status,
+          responseData: error.response?.data,
+          errorCode: error.code,
+          timeout: error.code === 'ECONNABORTED',
+          networkError: !error.response
+        },
+        ErrorLevel.LOW
+      );
 
       window.$message?.error(message);
     }

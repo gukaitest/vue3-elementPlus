@@ -1,6 +1,6 @@
-import type { TableColumnCheck } from '@sa/hooks';
 import { computed, ref } from 'vue';
 import type { TableColumnCtx } from 'element-plus';
+import type { TableColumnCheck } from '@sa/hooks';
 import { $t } from '@/locales';
 import type { AlovaGenerics, Method } from '~/packages/alova/src';
 

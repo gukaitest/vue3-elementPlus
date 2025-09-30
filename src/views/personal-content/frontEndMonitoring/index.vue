@@ -15,8 +15,8 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
       <PerformanceOptimization v-if="activeName === 'first'"></PerformanceOptimization>
     </ElTabPane>
 
-    <ElTabPane label="VXE-Table实现方式" name="second">
-      <VxeTableDemo v-if="activeName === 'second'"></VxeTableDemo>
+    <ElTabPane label="前端错误监控" name="second">
+      <ErrorMonitor v-if="activeName === 'second'"></ErrorMonitor>
     </ElTabPane>
   </ElTabs>
 </template>

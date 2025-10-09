@@ -6,3 +6,4 @@ export * from './app';
 export * from './ui';
 export * from './web-vitals';
 export * from './error-monitor';
+export * from './user-behavior-monitor';

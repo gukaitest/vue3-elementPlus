@@ -303,6 +303,181 @@ declare namespace Api {
   }
 
   /**
+   * namespace UserBehavior
+   *
+   * backend api module: "userBehavior"
+   */
+  namespace UserBehavior {
+    /** 行为类型枚举 */
+    type BehaviorType =
+      | 'session_start'
+      | 'session_end'
+      | 'page_view'
+      | 'click'
+      | 'scroll'
+      | 'input'
+      | 'form_submit'
+      | 'route_change'
+      | 'api_call'
+      | 'custom';
+
+    /** 行为级别枚举 */
+    type BehaviorLevel = 'low' | 'medium' | 'high' | 'critical';
+
+    /** 用户行为信息接口 */
+    interface BehaviorInfo {
+      // 基础信息
+      behaviorId: string;
+      type: BehaviorType;
+      action: string;
+      level?: BehaviorLevel;
+
+      // 会话信息
+      sessionId: string;
+      userId?: string;
+
+      // 页面信息
+      url: string;
+      userAgent: string;
+      pageLoadTime?: number;
+      timestamp: number;
+
+      // 自定义数据
+      customData?: Record<string, any>;
+
+      // 数据库字段
+      _id?: string;
+      created_at?: string;
+      updated_at?: string;
+      __v?: number;
+    }
+
+    /** 用户行为列表查询参数 */
+    interface BehaviorSearchParams {
+      /** 行为类型 */
+      type?: BehaviorType;
+      /** 行为级别 */
+      level?: BehaviorLevel;
+      /** 行为动作关键词 */
+      action?: string;
+      /** 用户ID */
+      userId?: string;
+      /** 会话ID */
+      sessionId?: string;
+      /** 开始时间戳 */
+      startTime?: number;
+      /** 结束时间戳 */
+      endTime?: number;
+      /** 当前页码 */
+      pageNo: number;
+      /** 页面大小 */
+      pageSize: number;
+    }
+
+    /** 用户行为列表响应数据 */
+    interface BehaviorList {
+      list: BehaviorInfo[];
+      total: number;
+    }
+
+    /** 用户行为统计信息 */
+    interface BehaviorStats {
+      /** 总行为数 */
+      total: number;
+      /** 按类型统计 */
+      byType: Record<BehaviorType, number>;
+      /** 按级别统计 */
+      byLevel: Record<BehaviorLevel, number>;
+      /** 最近行为列表 */
+      recent: BehaviorInfo[];
+    }
+
+    /** 用户行为上报请求数据 */
+    interface BehaviorReportRequest {
+      /** 行为信息 */
+      behaviorInfo: BehaviorInfo;
+    }
+
+    /** 后端接口行为数据格式 */
+    interface BehaviorReportData extends BehaviorInfo {
+      // 继承 BehaviorInfo 的所有字段
+      // 如果需要额外的字段，可以在这里添加
+    }
+
+    /** 用户行为上报响应数据 */
+    interface BehaviorReportResponse {
+      /** 是否成功 */
+      success: boolean;
+      /** 行为ID */
+      behaviorId: string;
+      /** 消息 */
+      message?: string;
+    }
+
+    /** 批量行为上报请求数据 */
+    interface BatchBehaviorReportRequest {
+      /** 行为信息列表 */
+      behaviors: BehaviorInfo[];
+    }
+
+    /** 用户行为监控配置 */
+    interface BehaviorMonitorConfig {
+      /** 是否启用控制台日志 */
+      enableConsoleLog?: boolean;
+      /** 是否启用上报 */
+      enableReport?: boolean;
+      /** 上报URL */
+      reportUrl?: string;
+      /** 自定义上报函数 */
+      customReport?: (behaviorInfo: BehaviorInfo) => void;
+      /** 忽略的行为类型 */
+      ignoreBehaviors?: BehaviorType[];
+      /** 最大行为数量 */
+      maxBehaviors?: number;
+      /** 采样率 */
+      sampleRate?: number;
+      /** 用户ID */
+      userId?: string;
+      /** 会话ID */
+      sessionId?: string;
+      /** 自定义数据 */
+      customData?: any;
+      /** 行为级别配置 */
+      levelConfig?: {
+        [key in BehaviorType]?: BehaviorLevel;
+      };
+    }
+
+    /** 会话信息接口 */
+    interface SessionInfo {
+      sessionId: string;
+      userId?: string;
+      startTime: number;
+      endTime?: number;
+      duration?: number;
+      pageViews: number;
+      interactions: number;
+      url: string;
+      userAgent: string;
+    }
+
+    /** 页面访问统计 */
+    interface PageViewStats {
+      url: string;
+      viewCount: number;
+      avgDuration: number;
+      bounceRate: number;
+    }
+
+    /** 用户路径分析 */
+    interface UserPathAnalysis {
+      path: string[];
+      count: number;
+      avgDuration: number;
+    }
+  }
+
+  /**
    * namespace Route
    *
    * backend api module: "route"

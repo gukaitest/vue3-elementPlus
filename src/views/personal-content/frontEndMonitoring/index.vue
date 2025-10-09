@@ -18,6 +18,9 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
     <ElTabPane label="前端错误监控" name="second">
       <ErrorMonitor v-if="activeName === 'second'"></ErrorMonitor>
     </ElTabPane>
+    <ElTabPane label="前端用户行为监控" name="third">
+      <Behavior v-if="activeName === 'third'"></Behavior>
+    </ElTabPane>
   </ElTabs>
 </template>
 

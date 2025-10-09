@@ -5,3 +5,4 @@ export * from './product';
 export * from './file';
 export * from './frontEndMonitoring';
 export * from './errorMonitor';
+export * from './behaviorMonitor';

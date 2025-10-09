@@ -8,6 +8,7 @@ import {
   setupLoading,
   setupNProgress,
   setupUI,
+  setupUserBehaviorMonitor,
   setupVueErrorHandler,
   setupWebVitals
 } from './plugins';
@@ -51,6 +52,64 @@ async function setupApp() {
       /moz-extension/,
       /safari-extension/
     ]
+  });
+
+  // 初始化用户行为监控
+  setupUserBehaviorMonitor({
+    enableConsoleLog: true,
+    enableReport: true,
+    reportUrl: '/proxy-default/monitor/behaviors',
+    sampleRate: 1, // 100%采样率
+    maxBehaviors: 1000,
+    ignoreBehaviors: [
+      // 忽略一些常见的系统行为
+      'mousemove',
+      'mouseover',
+      'mouseout'
+    ],
+    ignoreElements: [
+      // 忽略一些系统元素
+      'script',
+      'style',
+      'meta',
+      'link'
+    ],
+    monitorConfig: {
+      click: {
+        enabled: true,
+        debounceTime: 300,
+        trackText: true,
+        trackPosition: true
+      },
+      scroll: {
+        enabled: true,
+        throttleTime: 100,
+        trackDirection: true,
+        trackSpeed: false
+      },
+      input: {
+        enabled: true,
+        debounceTime: 500,
+        trackValue: false,
+        sensitiveFields: ['password', 'pwd', 'secret', 'token', 'key']
+      },
+      focus: {
+        enabled: true,
+        trackBlur: true
+      },
+      page: {
+        enabled: true,
+        trackPageView: true,
+        trackNavigation: true,
+        trackResize: true
+      },
+      session: {
+        enabled: true,
+        sessionTimeout: 30 * 60 * 1000, // 30分钟
+        trackSessionStart: true,
+        trackSessionEnd: true
+      }
+    }
   });
 
   const app = createApp(App);

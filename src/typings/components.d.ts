@@ -10,10 +10,10 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppProvider: typeof import('./../components/common/app-provider.vue')['default']
     BaseChart: typeof import('./../components/common/base-chart.vue')['default']
+    Behavior: typeof import('./../components/custom/behavior.vue')['default']
     BetterScroll: typeof import('./../components/custom/better-scroll.vue')['default']
     ButtonIcon: typeof import('./../components/custom/button-icon.vue')['default']
     ChartContainer: typeof import('./../components/common/chart-container.vue')['default']
-    copy: typeof import('./../components/custom/performance-optimization copy.vue')['default']
     CountTo: typeof import('./../components/custom/count-to.vue')['default']
     CustomIconSelect: typeof import('./../components/custom/custom-icon-select.vue')['default']
     DarkModeContainer: typeof import('./../components/common/dark-mode-container.vue')['default']

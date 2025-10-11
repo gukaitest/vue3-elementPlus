@@ -106,6 +106,12 @@ declare namespace Env {
     readonly VITE_STORAGE_PREFIX?: string;
     /** Whether to automatically detect updates after configuring application packaging */
     readonly VITE_AUTOMATICALLY_DETECT_UPDATE?: CommonType.YesOrNo;
+    /** Web Vitals monitoring report URL */
+    readonly VITE_WEB_VITALS_REPORT_URL?: string;
+    /** User Behavior Monitor report URL */
+    readonly VITE_USER_BEHAVIOR_REPORT_URL?: string;
+    /** Error Monitor report URL */
+    readonly VITE_ERROR_MONITOR_REPORT_URL?: string;
   }
 }
 

@@ -19,7 +19,9 @@ const gap = computed(() => (appStore.isMobile ? 0 : 16));
 const fpsConfig = {
   enableConsoleLog: true,
   enableReport: true, // 启用数据上报
-  reportUrl: 'http://localhost:3000/monitor/webvitals', // 上报URL
+  // reportUrl 会自动从环境变量 VITE_WEB_VITALS_REPORT_URL 中获取
+  // 开发环境: http://localhost:3000/monitor/webvitals
+  // 生产环境: http://47.103.169.121:8084/monitor/webvitals
   thresholds: {
     fps: 30 // 30fps作为基准
   },

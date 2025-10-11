@@ -1,5 +1,10 @@
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 
+// 获取 Web Vitals 上报 URL（根据环境变量动态配置）
+const getReportUrl = (): string => {
+  return import.meta.env.VITE_WEB_VITALS_REPORT_URL || 'http://localhost:3000/monitor/webvitals';
+};
+
 export interface WebVitalsData {
   name: string;
   value: number;
@@ -864,20 +869,23 @@ async function reportData(data: WebVitalsData, config: WebVitalsConfig) {
       config.customReport(data);
       return;
     }
-    if (config.reportUrl) {
-      await fetch('http://localhost:3000/monitor/webvitals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...data,
-          timestamp: Date.now(),
-          url: window.location.href,
-          userAgent: navigator.userAgent
-        })
-      });
-    }
+
+    // 使用配置中的 reportUrl，如果没有配置则使用环境变量中的 URL
+    const reportUrl = config.reportUrl || getReportUrl();
+
+    await fetch(reportUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...data,
+        timestamp: Date.now(),
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        environment: import.meta.env.MODE // 添加环境信息
+      })
+    });
   } catch (error) {
     console.error('Failed to report Web Vitals data:', error);
   }
@@ -1139,7 +1147,7 @@ export function stopFPSMonitor() {
         enableConsoleLog: true,
         enableReport: true,
         thresholds: DEFAULT_THRESHOLDS,
-        reportUrl: 'http://localhost:3000/monitor/webvitals'
+        reportUrl: getReportUrl()
       };
 
       handleWebVitalsData(data, defaultConfig);
@@ -1173,7 +1181,7 @@ export function stopLongTaskMonitor() {
     enableConsoleLog: true,
     enableReport: true,
     thresholds: DEFAULT_THRESHOLDS,
-    reportUrl: 'http://localhost:3000/monitor/webvitals'
+    reportUrl: getReportUrl()
   };
   stopLongTaskMonitoring(defaultConfig);
 }
@@ -1212,7 +1220,7 @@ export function stopMemoryLeakMonitor() {
     enableConsoleLog: true,
     enableReport: true,
     thresholds: DEFAULT_THRESHOLDS,
-    reportUrl: 'http://localhost:3000/monitor/webvitals'
+    reportUrl: getReportUrl()
   };
   stopMemoryLeakMonitoring(defaultConfig);
 }
@@ -1520,7 +1528,7 @@ export function stopMemoryMonitor() {
     enableConsoleLog: true,
     enableReport: true,
     thresholds: DEFAULT_THRESHOLDS,
-    reportUrl: 'http://localhost:3000/monitor/webvitals'
+    reportUrl: getReportUrl()
   };
   stopMemoryMonitoring(defaultConfig);
 }

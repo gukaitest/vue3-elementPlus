@@ -37,7 +37,7 @@ async function setupApp() {
   setupErrorMonitor({
     enableConsoleLog: true,
     enableReport: true,
-    reportUrl: '/proxy-default/monitor/errors',
+    reportUrl: import.meta.env.VITE_ERROR_MONITOR_REPORT_URL || '/proxy-default/monitor/errors',
     sampleRate: 1, // 100%采样率
     maxErrors: 100,
     ignoreErrors: [
@@ -58,7 +58,7 @@ async function setupApp() {
   setupUserBehaviorMonitor({
     enableConsoleLog: true,
     enableReport: true,
-    reportUrl: '/proxy-default/monitor/behaviors',
+    reportUrl: import.meta.env.VITE_USER_BEHAVIOR_REPORT_URL || '/proxy-default/monitor/behaviors',
     sampleRate: 1, // 100%采样率
     maxBehaviors: 1000,
     ignoreBehaviors: [

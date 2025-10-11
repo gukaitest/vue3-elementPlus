@@ -14,7 +14,11 @@ pnpm dev
 
 3.组件导出defineOptions({ name: 'VxeTableDemo' });
 
+
 4.介于服务器大小影响，需先本地打包在部署
+
+
+5.通过jenkins部署时，需要科学上网，避免拉取github代码时出现网络错误，但不需修改电脑本地网络的代理
 
 import ChartContainer from '../common/chart-container.vue';
 import BaseChart from './base-chart.vue';

@@ -1,0 +1,41 @@
+# Cursor AI ignore file
+# Files and directories to exclude from AI features
+
+# Environment files with sensitive data
+# Explicitly allow .env files for AI processing
+!.env
+!.env.*
+!.env.example
+
+# Configuration files that might contain sensitive info
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Build outputs
+dist/
+build/
+node_modules/
+
+# IDE specific files
+.vscode/
+.idea/
+
+# OS specific files
+.DS_Store
+Thumbs.db

@@ -29,15 +29,17 @@ async function setupApp() {
   // 初始化Web Vitals性能监控
   setupWebVitals({
     enableConsoleLog: true,
-    enableReport: true,
-    reportUrl: '/proxy-default/monitor/webvitals'
+    enableReport: true
+    // reportUrl 使用环境变量配置，无需硬编码
+    // 开发环境: VITE_WEB_VITALS_REPORT_URL (from .env.test)
+    // 生产环境: VITE_WEB_VITALS_REPORT_URL (from .env.prod)
   });
 
   // 初始化错误监控
   setupErrorMonitor({
     enableConsoleLog: true,
     enableReport: true,
-    reportUrl: import.meta.env.VITE_ERROR_MONITOR_REPORT_URL || '/proxy-default/monitor/errors',
+    reportUrl: import.meta.env.VITE_ERROR_MONITOR_REPORT_URL,
     sampleRate: 1, // 100%采样率
     maxErrors: 100,
     ignoreErrors: [
@@ -58,7 +60,7 @@ async function setupApp() {
   setupUserBehaviorMonitor({
     enableConsoleLog: true,
     enableReport: true,
-    reportUrl: import.meta.env.VITE_USER_BEHAVIOR_REPORT_URL || '/proxy-default/monitor/behaviors',
+    reportUrl: import.meta.env.VITE_USER_BEHAVIOR_REPORT_URL,
     sampleRate: 1, // 100%采样率
     maxBehaviors: 1000,
     ignoreBehaviors: [

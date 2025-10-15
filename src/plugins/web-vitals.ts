@@ -2,7 +2,7 @@ import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 
 // 获取 Web Vitals 上报 URL（根据环境变量动态配置）
 const getReportUrl = (): string => {
-  return import.meta.env.VITE_WEB_VITALS_REPORT_URL || 'http://localhost:3000/monitor/webvitals';
+  return import.meta.env.VITE_WEB_VITALS_REPORT_URL || 'http://localhost:3000/monitor/webvitals-batch';
 };
 
 export interface WebVitalsData {
@@ -63,6 +63,17 @@ export interface WebVitalsConfig {
   reportUrl?: string;
   // 自定义数据上报函数
   customReport?: (data: WebVitalsData) => void;
+  // 批量上报配置
+  batchConfig?: {
+    // 是否启用批量上报
+    enabled?: boolean;
+    // 批量大小，达到该数量后立即上报
+    batchSize?: number;
+    // 批量上报间隔（毫秒），超时后自动上报
+    batchInterval?: number;
+    // 批量上报URL，默认使用 reportUrl（环境变量中应配置完整的批量上报路径）
+    batchReportUrl?: string;
+  };
   // 阈值配置
   thresholds?: {
     lcp?: number;
@@ -182,6 +193,13 @@ const DEFAULT_MEMORY_CONFIG = {
   leakDetectionWindow: 10 // 使用最近10个样本检测泄漏
 };
 
+// 默认批量上报配置
+const DEFAULT_BATCH_CONFIG = {
+  enabled: true, // 默认启用批量上报
+  batchSize: 10, // 达到10条数据后上报
+  batchInterval: 1000 * 120 // 120秒超时上报
+};
+
 // FPS监控器变量
 let fpsMonitor: {
   startTime: number; // 监控开始时间（固定不变）
@@ -223,6 +241,14 @@ let memoryMonitor: {
   isRunning: boolean;
   config: typeof DEFAULT_MEMORY_CONFIG;
   leakDetected: boolean;
+} | null = null;
+
+// 批量上报队列管理器变量
+let batchReportQueue: {
+  queue: Array<WebVitalsData & { timestamp: number; url: string; userAgent: string; environment: string }>;
+  timer: number | null;
+  config: typeof DEFAULT_BATCH_CONFIG & { batchReportUrl?: string };
+  isEnabled: boolean;
 } | null = null;
 
 // 获取性能评级
@@ -860,17 +886,152 @@ function logToConsole(data: WebVitalsData, config: WebVitalsConfig) {
   console.groupEnd();
 }
 
+// 初始化批量上报队列
+function initBatchReportQueue(config: WebVitalsConfig) {
+  const batchConfig = { ...DEFAULT_BATCH_CONFIG, ...config.batchConfig };
+
+  if (!batchConfig.enabled) return;
+
+  // 如果已经初始化过，先清理
+  if (batchReportQueue) {
+    clearBatchReportQueue();
+  }
+
+  const reportUrl = config.reportUrl || getReportUrl();
+  const batchReportUrl = batchConfig.batchReportUrl || reportUrl;
+
+  batchReportQueue = {
+    queue: [],
+    timer: null,
+    config: {
+      ...batchConfig,
+      batchReportUrl
+    },
+    isEnabled: true
+  };
+
+  console.log('📦 批量上报队列已初始化，配置:', {
+    batchSize: batchConfig.batchSize,
+    batchInterval: batchConfig.batchInterval,
+    batchReportUrl
+  });
+}
+
+// 执行批量上报
+async function flushBatchReport() {
+  if (!batchReportQueue || batchReportQueue.queue.length === 0) return;
+
+  const { queue, config } = batchReportQueue;
+  const dataToReport = [...queue];
+
+  // 清空队列
+  batchReportQueue.queue = [];
+
+  // 清除定时器
+  if (batchReportQueue.timer !== null) {
+    clearTimeout(batchReportQueue.timer);
+    batchReportQueue.timer = null;
+  }
+
+  try {
+    console.log(`📤 批量上报 ${dataToReport.length} 条数据到:`, config.batchReportUrl);
+
+    await fetch(config.batchReportUrl!, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        batch: dataToReport,
+        batchSize: dataToReport.length,
+        batchTimestamp: Date.now()
+      })
+    });
+
+    console.log(`✅ 批量上报成功: ${dataToReport.length} 条数据`);
+  } catch (error) {
+    console.error('❌ 批量上报失败:', error);
+    // 上报失败时，可以选择将数据重新加入队列或丢弃
+    // 这里选择丢弃，避免队列无限增长
+  }
+}
+
+// 添加数据到批量队列
+function addToBatchQueue(data: WebVitalsData, config: WebVitalsConfig) {
+  if (!batchReportQueue || !batchReportQueue.isEnabled) return;
+
+  // 构建完整的上报数据
+  const queueData = {
+    ...data,
+    timestamp: Date.now(),
+    url: window.location.href,
+    userAgent: navigator.userAgent,
+    environment: import.meta.env.MODE
+  };
+
+  batchReportQueue.queue.push(queueData);
+
+  console.log(
+    `📝 添加数据到批量队列，当前队列长度: ${batchReportQueue.queue.length}/${batchReportQueue.config.batchSize}`
+  );
+
+  // 检查是否达到批量大小
+  if (batchReportQueue.queue.length >= batchReportQueue.config.batchSize) {
+    console.log('📦 批量队列已满，立即上报');
+    flushBatchReport();
+    return;
+  }
+
+  // 设置定时器，超时后自动上报
+  if (batchReportQueue.timer === null) {
+    batchReportQueue.timer = window.setTimeout(() => {
+      if (batchReportQueue && batchReportQueue.queue.length > 0) {
+        console.log('⏰ 批量上报超时，执行上报');
+        flushBatchReport();
+      }
+    }, batchReportQueue.config.batchInterval);
+  }
+}
+
+// 清理批量上报队列
+function clearBatchReportQueue() {
+  if (!batchReportQueue) return;
+
+  // 如果还有数据，先上报
+  if (batchReportQueue.queue.length > 0) {
+    console.log('🧹 清理批量队列前先上报剩余数据');
+    flushBatchReport();
+  }
+
+  // 清除定时器
+  if (batchReportQueue.timer !== null) {
+    clearTimeout(batchReportQueue.timer);
+  }
+
+  batchReportQueue = null;
+  console.log('🧹 批量上报队列已清理');
+}
+
 // 数据上报
 async function reportData(data: WebVitalsData, config: WebVitalsConfig) {
   if (!config.enableReport) return;
 
   try {
+    // 优先使用自定义上报函数
     if (config.customReport) {
       config.customReport(data);
       return;
     }
 
-    // 使用配置中的 reportUrl，如果没有配置则使用环境变量中的 URL
+    // 检查是否启用批量上报
+    const batchConfig = { ...DEFAULT_BATCH_CONFIG, ...config.batchConfig };
+    if (batchConfig.enabled && batchReportQueue) {
+      // 使用批量上报
+      addToBatchQueue(data, config);
+      return;
+    }
+
+    // 使用单个上报
     const reportUrl = config.reportUrl || getReportUrl();
 
     await fetch(reportUrl, {
@@ -913,8 +1074,38 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
     longTaskConfig: DEFAULT_LONG_TASK_CONFIG,
     memoryLeakConfig: DEFAULT_MEMORY_LEAK_CONFIG,
     memoryConfig: DEFAULT_MEMORY_CONFIG,
+    batchConfig: DEFAULT_BATCH_CONFIG,
     ...config
   };
+
+  // 初始化批量上报队列
+  if (finalConfig.batchConfig?.enabled) {
+    initBatchReportQueue(finalConfig);
+  }
+
+  // 监听页面卸载事件，确保批量数据被上报
+  window.addEventListener('beforeunload', () => {
+    if (batchReportQueue && batchReportQueue.queue.length > 0) {
+      // 使用 sendBeacon 在页面卸载时可靠地发送数据
+      const batchReportUrl = batchReportQueue.config.batchReportUrl;
+      if (batchReportUrl) {
+        const data = JSON.stringify({
+          batch: batchReportQueue.queue,
+          batchSize: batchReportQueue.queue.length,
+          batchTimestamp: Date.now()
+        });
+        navigator.sendBeacon(batchReportUrl, data);
+        console.log('📤 页面卸载时使用 sendBeacon 上报剩余数据');
+      }
+    }
+  });
+
+  // 监听页面可见性变化，在页面隐藏时上报批量数据
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && batchReportQueue && batchReportQueue.queue.length > 0) {
+      flushBatchReport();
+    }
+  });
 
   // 监控LCP (Largest Contentful Paint)
   onLCP((metric: any) => {
@@ -1576,4 +1767,67 @@ export function getMemoryStats() {
     leakDetected: memoryMonitor.leakDetected,
     recentSamples: samples.slice(-5) // 最近5个样本
   };
+}
+
+// ===== 批量上报控制函数 =====
+
+// 手动触发批量上报
+export function flushWebVitalsBatchReport() {
+  if (!batchReportQueue) {
+    console.warn('批量上报队列未初始化');
+    return;
+  }
+
+  if (batchReportQueue.queue.length === 0) {
+    console.log('批量队列为空，无需上报');
+    return;
+  }
+
+  console.log('🚀 手动触发批量上报');
+  flushBatchReport();
+}
+
+// 获取批量队列状态
+export function getWebVitalsBatchQueueStatus() {
+  if (!batchReportQueue) {
+    return {
+      isEnabled: false,
+      queueLength: 0,
+      batchSize: 0,
+      batchInterval: 0,
+      batchReportUrl: null
+    };
+  }
+
+  return {
+    isEnabled: batchReportQueue.isEnabled,
+    queueLength: batchReportQueue.queue.length,
+    batchSize: batchReportQueue.config.batchSize,
+    batchInterval: batchReportQueue.config.batchInterval,
+    batchReportUrl: batchReportQueue.config.batchReportUrl,
+    hasTimer: batchReportQueue.timer !== null
+  };
+}
+
+// 启用批量上报（动态切换）
+export function enableBatchReport(config: WebVitalsConfig = {}) {
+  const finalConfig = {
+    enableConsoleLog: true,
+    enableReport: true,
+    batchConfig: {
+      ...DEFAULT_BATCH_CONFIG,
+      enabled: true,
+      ...config.batchConfig
+    },
+    ...config
+  };
+
+  console.log('🔄 启用批量上报');
+  initBatchReportQueue(finalConfig);
+}
+
+// 禁用批量上报（动态切换）
+export function disableBatchReport() {
+  console.log('🔄 禁用批量上报');
+  clearBatchReportQueue();
 }

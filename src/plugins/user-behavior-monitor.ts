@@ -1,5 +1,10 @@
 /** 用户行为监控系统 类似web-vitals性能监控和错误监控，提供全面的用户行为监控功能 */
 
+// 获取用户行为上报 URL（根据环境变量动态配置）
+const getReportUrl = (): string => {
+  return import.meta.env.VITE_USER_BEHAVIOR_REPORT_URL || 'http://localhost:3000/monitor/behaviors-batch';
+};
+
 // 用户行为类型枚举
 export enum UserBehaviorType {
   CLICK = 'click',
@@ -89,6 +94,18 @@ export interface UserBehaviorMonitorConfig {
   reportUrl?: string;
   customReport?: (behaviorData: UserBehaviorData) => void;
 
+  // 批量上报配置
+  batchConfig?: {
+    // 是否启用批量上报
+    enabled?: boolean;
+    // 批量大小，达到该数量后立即上报
+    batchSize?: number;
+    // 批量上报间隔（毫秒），超时后自动上报
+    batchInterval?: number;
+    // 批量上报URL，默认使用 reportUrl（环境变量中应配置完整的批量上报路径）
+    batchReportUrl?: string;
+  };
+
   // 行为过滤
   ignoreBehaviors?: (string | RegExp)[];
   ignoreElements?: (string | RegExp)[];
@@ -154,11 +171,19 @@ export interface UserBehaviorMonitorConfig {
   };
 }
 
+// 默认批量上报配置
+const DEFAULT_BATCH_CONFIG = {
+  enabled: true, // 默认启用批量上报
+  batchSize: 10, // 达到10条数据后上报
+  batchInterval: 1000 * 120 // 120秒超时上报
+};
+
 // 默认配置
 const DEFAULT_CONFIG: UserBehaviorMonitorConfig = {
   enableConsoleLog: true,
   enableReport: false,
   reportUrl: '',
+  batchConfig: DEFAULT_BATCH_CONFIG,
   ignoreBehaviors: [],
   ignoreElements: [],
   maxBehaviors: 1000,
@@ -217,6 +242,14 @@ const DEFAULT_CONFIG: UserBehaviorMonitorConfig = {
   }
 };
 
+// 批量上报队列接口
+interface BatchReportQueue {
+  queue: UserBehaviorData[];
+  timer: number | null;
+  config: typeof DEFAULT_BATCH_CONFIG & { batchReportUrl?: string };
+  isEnabled: boolean;
+}
+
 // 用户行为收集器
 class UserBehaviorCollector {
   private behaviors: UserBehaviorData[] = [];
@@ -227,18 +260,178 @@ class UserBehaviorCollector {
   private sessionTimer: number | null = null;
   private scrollTimer: number | null = null;
   public inputTimers: Map<string, number> = new Map();
+  private batchReportQueue: BatchReportQueue | null = null;
 
   constructor(config: UserBehaviorMonitorConfig = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.sessionId = this.generateSessionId();
     this.sessionStartTime = Date.now();
     this.lastActivityTime = Date.now();
+    this.initBatchReportQueue();
     this.setupSessionMonitoring();
+    this.setupPageUnloadHandler();
   }
 
   // 生成会话ID
   private generateSessionId(): string {
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  // 初始化批量上报队列
+  private initBatchReportQueue(): void {
+    const batchConfig = { ...DEFAULT_BATCH_CONFIG, ...this.config.batchConfig };
+
+    if (!batchConfig.enabled) return;
+
+    // 如果已经初始化过，先清理
+    if (this.batchReportQueue) {
+      this.clearBatchReportQueue();
+    }
+
+    const reportUrl = this.config.reportUrl || getReportUrl();
+    const batchReportUrl = batchConfig.batchReportUrl || reportUrl;
+
+    this.batchReportQueue = {
+      queue: [],
+      timer: null,
+      config: {
+        ...batchConfig,
+        batchReportUrl
+      },
+      isEnabled: true
+    };
+
+    if (this.config.enableConsoleLog) {
+      console.log('📦 用户行为批量上报队列已初始化，配置:', {
+        batchSize: batchConfig.batchSize,
+        batchInterval: batchConfig.batchInterval,
+        batchReportUrl
+      });
+    }
+  }
+
+  // 执行批量上报
+  private async flushBatchReport(): Promise<void> {
+    if (!this.batchReportQueue || this.batchReportQueue.queue.length === 0) return;
+
+    const { queue, config } = this.batchReportQueue;
+    const dataToReport = [...queue];
+
+    // 清空队列
+    this.batchReportQueue.queue = [];
+
+    // 清除定时器
+    if (this.batchReportQueue.timer !== null) {
+      clearTimeout(this.batchReportQueue.timer);
+      this.batchReportQueue.timer = null;
+    }
+
+    try {
+      if (this.config.enableConsoleLog) {
+        console.log(`📤 批量上报 ${dataToReport.length} 条用户行为数据到:`, config.batchReportUrl);
+      }
+
+      await fetch(config.batchReportUrl!, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          batch: dataToReport,
+          batchSize: dataToReport.length,
+          batchTimestamp: Date.now()
+        })
+      });
+
+      if (this.config.enableConsoleLog) {
+        console.log(`✅ 批量上报成功: ${dataToReport.length} 条数据`);
+      }
+    } catch (error) {
+      console.error('❌ 批量上报失败:', error);
+    }
+  }
+
+  // 添加数据到批量队列
+  private addToBatchQueue(behaviorData: UserBehaviorData): void {
+    if (!this.batchReportQueue || !this.batchReportQueue.isEnabled) return;
+
+    this.batchReportQueue.queue.push(behaviorData);
+
+    if (this.config.enableConsoleLog) {
+      console.log(
+        `📝 添加行为到批量队列，当前队列长度: ${this.batchReportQueue.queue.length}/${this.batchReportQueue.config.batchSize}`
+      );
+    }
+
+    // 检查是否达到批量大小
+    if (this.batchReportQueue.queue.length >= this.batchReportQueue.config.batchSize) {
+      if (this.config.enableConsoleLog) {
+        console.log('📦 批量队列已满，立即上报');
+      }
+      this.flushBatchReport();
+      return;
+    }
+
+    // 设置定时器，超时后自动上报
+    if (this.batchReportQueue.timer === null) {
+      this.batchReportQueue.timer = window.setTimeout(() => {
+        if (this.batchReportQueue && this.batchReportQueue.queue.length > 0) {
+          if (this.config.enableConsoleLog) {
+            console.log('⏰ 批量上报超时，执行上报');
+          }
+          this.flushBatchReport();
+        }
+      }, this.batchReportQueue.config.batchInterval);
+    }
+  }
+
+  // 清理批量上报队列
+  private clearBatchReportQueue(): void {
+    if (!this.batchReportQueue) return;
+
+    // 如果还有数据，先上报
+    if (this.batchReportQueue.queue.length > 0) {
+      if (this.config.enableConsoleLog) {
+        console.log('🧹 清理批量队列前先上报剩余数据');
+      }
+      this.flushBatchReport();
+    }
+
+    // 清除定时器
+    if (this.batchReportQueue.timer !== null) {
+      clearTimeout(this.batchReportQueue.timer);
+    }
+
+    this.batchReportQueue = null;
+  }
+
+  // 设置页面卸载处理
+  private setupPageUnloadHandler(): void {
+    // 监听页面卸载事件，确保批量数据被上报
+    window.addEventListener('beforeunload', () => {
+      if (this.batchReportQueue && this.batchReportQueue.queue.length > 0) {
+        // 使用 sendBeacon 在页面卸载时可靠地发送数据
+        const batchReportUrl = this.batchReportQueue.config.batchReportUrl;
+        if (batchReportUrl) {
+          const data = JSON.stringify({
+            batch: this.batchReportQueue.queue,
+            batchSize: this.batchReportQueue.queue.length,
+            batchTimestamp: Date.now()
+          });
+          navigator.sendBeacon(batchReportUrl, data);
+          if (this.config.enableConsoleLog) {
+            console.log('📤 页面卸载时使用 sendBeacon 上报剩余数据');
+          }
+        }
+      }
+    });
+
+    // 监听页面可见性变化，在页面隐藏时上报批量数据
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && this.batchReportQueue && this.batchReportQueue.queue.length > 0) {
+        this.flushBatchReport();
+      }
+    });
   }
 
   // 生成行为ID（纯数字格式）
@@ -364,18 +557,33 @@ class UserBehaviorCollector {
     }
 
     try {
+      // 优先使用自定义上报函数
       if (this.config.customReport) {
         this.config.customReport(behaviorData);
         return;
       }
 
-      if (this.config.reportUrl) {
+      // 检查是否启用批量上报
+      const batchConfig = { ...DEFAULT_BATCH_CONFIG, ...this.config.batchConfig };
+      if (batchConfig.enabled && this.batchReportQueue) {
+        // 使用批量上报
+        const reportData = {
+          ...behaviorData,
+          customData: behaviorData.customData || this.config.customData || {}
+        };
+        this.addToBatchQueue(reportData);
+        return;
+      }
+
+      // 使用单个上报
+      const reportUrl = this.config.reportUrl || getReportUrl();
+      if (reportUrl) {
         const reportData = {
           ...behaviorData,
           customData: behaviorData.customData || this.config.customData || {}
         };
 
-        await fetch(this.config.reportUrl, {
+        await fetch(reportUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -480,6 +688,52 @@ class UserBehaviorCollector {
     }
     this.inputTimers.forEach(timer => clearTimeout(timer));
     this.inputTimers.clear();
+
+    // 清理批量上报队列
+    this.clearBatchReportQueue();
+  }
+
+  // 获取批量队列状态
+  getBatchQueueStatus(): {
+    isEnabled: boolean;
+    queueLength: number;
+    batchSize: number;
+    batchInterval: number;
+    batchReportUrl: string | null;
+  } {
+    if (!this.batchReportQueue) {
+      return {
+        isEnabled: false,
+        queueLength: 0,
+        batchSize: 0,
+        batchInterval: 0,
+        batchReportUrl: null
+      };
+    }
+
+    return {
+      isEnabled: this.batchReportQueue.isEnabled,
+      queueLength: this.batchReportQueue.queue.length,
+      batchSize: this.batchReportQueue.config.batchSize,
+      batchInterval: this.batchReportQueue.config.batchInterval,
+      batchReportUrl: this.batchReportQueue.config.batchReportUrl || null
+    };
+  }
+
+  // 手动触发批量上报
+  flushBatchReportManually(): void {
+    if (!this.batchReportQueue) {
+      console.warn('批量上报队列未初始化');
+      return;
+    }
+
+    if (this.batchReportQueue.queue.length === 0) {
+      console.log('批量队列为空，无需上报');
+      return;
+    }
+
+    console.log('🚀 手动触发批量上报');
+    this.flushBatchReport();
   }
 }
 
@@ -823,6 +1077,35 @@ export function destroyUserBehaviorMonitor(): void {
   }
 }
 
+// 获取批量队列状态
+export function getUserBehaviorBatchQueueStatus(): {
+  isEnabled: boolean;
+  queueLength: number;
+  batchSize: number;
+  batchInterval: number;
+  batchReportUrl: string | null;
+} {
+  if (!userBehaviorCollector) {
+    return {
+      isEnabled: false,
+      queueLength: 0,
+      batchSize: 0,
+      batchInterval: 0,
+      batchReportUrl: null
+    };
+  }
+  return userBehaviorCollector.getBatchQueueStatus();
+}
+
+// 手动触发批量上报
+export function flushUserBehaviorBatchReport(): void {
+  if (!userBehaviorCollector) {
+    console.warn('用户行为监控器未初始化');
+    return;
+  }
+  userBehaviorCollector.flushBatchReportManually();
+}
+
 // Default export for module resolution
 export default {
   setupUserBehaviorMonitor,
@@ -831,6 +1114,8 @@ export default {
   clearUserBehaviors,
   updateUserBehaviorMonitorConfig,
   destroyUserBehaviorMonitor,
+  getUserBehaviorBatchQueueStatus,
+  flushUserBehaviorBatchReport,
   UserBehaviorType,
   UserBehaviorLevel
 };

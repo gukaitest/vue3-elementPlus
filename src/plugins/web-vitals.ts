@@ -971,9 +971,9 @@ function addToBatchQueue(data: WebVitalsData, config: WebVitalsConfig) {
 
   batchReportQueue.queue.push(queueData);
 
-  console.log(
-    `📝 添加数据到批量队列，当前队列长度: ${batchReportQueue.queue.length}/${batchReportQueue.config.batchSize}`
-  );
+  // console.log(
+  //   `📝 添加数据到批量队列，当前队列长度: ${batchReportQueue.queue.length}/${batchReportQueue.config.batchSize}`
+  // );
 
   // 检查是否达到批量大小
   if (batchReportQueue.queue.length >= batchReportQueue.config.batchSize) {
@@ -1055,7 +1055,7 @@ async function reportData(data: WebVitalsData, config: WebVitalsConfig) {
 // 处理Web Vitals数据
 function handleWebVitalsData(data: WebVitalsData, config: WebVitalsConfig) {
   // 输出到控制台
-  logToConsole(data, config);
+  // logToConsole(data, config);
 
   // 数据上报
   reportData(data, config);

@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { computed, reactive, ref } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElAlert, ElButton, ElEmpty, ElMessage } from 'element-plus';
+import { InfoFilled, Upload } from '@element-plus/icons-vue';
 import { checkFile, mergeChunk, uploadFile } from '@/service/api';
-// import ListItem from '@/components/ListItem/index.vue';
+import ListItem from '@/components/ListItem/index.vue';
 
 // 文件大小限制常量 (100MB)
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB in bytes
@@ -56,6 +57,25 @@ const statistics = computed(() => {
   const otherArr = uploadFileList.value.filter(item => item.state !== 4);
   return `${otherArr.length}/${uploadFileList.value.length}`;
 });
+
+// 计算是否有上传中的文件
+const hasUploadingFiles = computed(() => {
+  return uploadFileList.value.some(item => [1, 2].includes(item.state));
+});
+
+// 计算是否可以全部取消（如果所有文件都已完成，则不可取消）
+const canCancelAll = computed(() => {
+  if (uploadFileList.value.length === 0) {
+    return false;
+  }
+  // 如果所有文件都已完成（state === 4），则不可取消
+  return uploadFileList.value.some(item => item.state !== 4);
+});
+
+// 计算顶部按钮区域样式
+const topRightStyle = computed(() => ({
+  justifyContent: uploadFileList.value.length > 1 ? 'space-between' : 'flex-end'
+}));
 
 // 生成文件 hash（web-worker）
 const useWorker = (file: File): Promise<WorkerResult> => {
@@ -118,6 +138,11 @@ const cancelSingle = async (taskArrItem: FileUploadStatus) => {
 
 // 全部取消
 const cancelAll = () => {
+  // 如果所有文件都已完成，不允许取消
+  if (!canCancelAll.value) {
+    return;
+  }
+
   for (const item of uploadFileList.value) {
     pauseUpload(item);
   }
@@ -365,7 +390,7 @@ const handleUploadFile = async (e: Event) => {
         fileHash: `${fileHash}${baseName}`,
         fileName: file.name
       });
-      console.log('res', res);
+      console.log('res============', res);
       if (res.response.data.code === '0000') {
         const { shouldUpload, uploadedList } = res.data;
 
@@ -434,45 +459,83 @@ const handleUploadFile = async (e: Event) => {
 
 <template>
   <div class="page">
-    <!-- 功能演示提示 -->
-    <div class="demo-notice">
-      <div class="notice-content">
-        <i class="el-icon-info"></i>
-        <span>功能演示：请上传小于{{ MAX_FILE_SIZE_MB }}MB的文件。超过限制的文件将被拒绝上传。</span>
+    <!-- 提示信息 -->
+    <ElAlert :closable="false" type="info" :icon="InfoFilled" class="demo-notice">
+      <template #default>
+        <span class="notice-text">
+          服务器内存限制，请上传小于
+          <strong>{{ MAX_FILE_SIZE_MB }}MB</strong>
+          的文件。超过限制的文件将被拒绝上传。
+        </span>
+      </template>
+    </ElAlert>
+
+    <!-- 顶部工具栏 -->
+    <div class="page_top">
+      <div class="page_top_left">
+        <span class="upload-status">
+          正在上传
+          <span class="status-count">({{ statistics }})</span>
+        </span>
+      </div>
+      <div class="page_top_right" :style="topRightStyle">
+        <ElButton
+          v-if="uploadFileList.length > 1"
+          type="danger"
+          size="small"
+          plain
+          :disabled="!canCancelAll"
+          :class="{ 'cancel-all-btn-disabled': !canCancelAll }"
+          @click="cancelAll"
+        >
+          全部取消
+        </ElButton>
       </div>
     </div>
 
-    <div class="page_top">
-      <div>正在上传 ({{ statistics }})</div>
-      <div
-        class="page_top_right"
-        :style="{
-          'justify-content': uploadFileList.length > 1 ? 'space-between' : 'flex-end'
-        }"
-      >
-        <p v-if="uploadFileList.length > 1" class="clear_btn" @click="cancelAll">全部取消</p>
-      </div>
-    </div>
+    <!-- 文件列表内容区 -->
     <div ref="contentRef" class="content">
       <ListItem
+        v-if="uploadFileList.length > 0"
         :upload-file-list="uploadFileList"
         @pause-upload="pauseUpload"
         @resume-upload="resumeUpload"
         @cancel-single="cancelSingle"
       />
+      <ElEmpty v-else description="暂无上传文件" :image-size="120" class="empty-state">
+        <template #description>
+          <p class="empty-text">点击下方按钮选择文件开始上传</p>
+        </template>
+      </ElEmpty>
     </div>
 
+    <!-- 底部上传区域 -->
     <div class="bottom_box">
-      <div class="input_btn">
-        上传文件
-        <input type="file" multiple class="is_input" @change="handleUploadFile" />
+      <div class="upload-area">
+        <div class="input_btn">
+          <ElButton type="primary" :icon="hasUploadingFiles ? undefined : Upload">
+            {{ hasUploadingFiles ? '继续添加文件' : '选择文件' }}
+          </ElButton>
+          <input
+            type="file"
+            multiple
+            class="is_input"
+            accept="*/*"
+            aria-label="选择要上传的文件"
+            @change="handleUploadFile"
+          />
+        </div>
+        <div class="file-info">
+          <span class="info-item">
+            <i class="info-icon">📄</i>
+            支持格式：任意文件
+          </span>
+          <span class="info-item">
+            <i class="info-icon">📦</i>
+            大小限制：{{ MAX_FILE_SIZE_MB }}MB
+          </span>
+        </div>
       </div>
-      <div class="file-info">
-        <span>支持格式：任意文件</span>
-        <span>大小限制：{{ MAX_FILE_SIZE_MB }}MB</span>
-      </div>
-      <!-- <ElButton type="primary" @change="handleUploadFile">上传</ElButton> -->
-      <!-- <ElInput type="file" multiple style="width: 240px" placeholder="Please input" @change="handleUploadFile" /> -->
     </div>
   </div>
 </template>
@@ -487,96 +550,133 @@ const handleUploadFile = async (e: Event) => {
   position: relative;
 }
 
-/* 功能演示提示样式 */
+/* 提示信息样式 */
 .demo-notice {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 12px 24px;
-  text-align: center;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.notice-text {
   font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  line-height: 1.5;
 }
 
-.notice-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  max-width: 800px;
-  margin: 0 auto;
+.notice-text strong {
+  color: var(--el-color-primary);
+  font-weight: 600;
 }
 
-.notice-content i {
-  font-size: 16px;
-  color: #ffd700;
-}
-
-.notice-content span {
-  line-height: 1.4;
-}
+/* 顶部工具栏 */
 .page_top {
-  height: 48px;
-  padding: 0 48px;
+  height: 56px;
+  padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
-  color: #8386be;
+  background-color: #fafafa;
+  border-bottom: 1px solid #e4e7ed;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
-.page_top_right {
-  width: 260px;
+
+.page_top_left {
+  flex: 1;
   display: flex;
+  align-items: center;
 }
-.page_top div {
-  padding: 12px;
-  width: 100%;
+
+.upload-status {
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
 }
-.clear_btn {
-  cursor: pointer;
-  color: #853b3c;
-  user-select: none;
+
+.status-count {
+  color: var(--el-color-primary);
+  font-weight: 600;
 }
-.clear_btn:hover {
-  cursor: pointer;
-  color: #b65658;
+
+.page_top_right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 120px;
+  justify-content: flex-end;
+}
+
+.cancel-all-btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+.cancel-all-btn-disabled:hover {
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .page_top {
+    padding: 0 16px;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 56px;
+    gap: 8px;
+  }
+
+  .page_top_left {
+    width: 100%;
+  }
 }
 .content {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 16px;
   overflow-y: auto;
-  height: calc(100vh - 128px);
-  border-radius: 14px;
-  /* background-color: #303944; */
+  height: calc(100vh - 300px);
+  min-height: 300px;
   background-color: #fff;
-  border: 1px solid #252f3c;
-  box-shadow: 0 0 10px rgb(240, 239, 239) inset;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 400px;
+}
+
+.empty-text {
+  color: #909399;
+  font-size: 14px;
+  margin-top: 8px;
 }
 .bottom_box {
-  text-align: center;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
-  height: 80px;
+  right: 0;
   width: 100%;
+  padding: 20px 24px;
+  background: linear-gradient(to top, #fff 0%, #fff 80%, rgba(255, 255, 255, 0.95) 100%);
+  border-top: 1px solid #e4e7ed;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.upload-area {
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.file-info {
-  display: flex;
-  gap: 20px;
-  font-size: 12px;
-  color: #666;
+.input_btn {
+  position: relative;
+  display: inline-block;
 }
 
-.file-info span {
-  padding: 4px 8px;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
 .input_btn > input {
   position: absolute;
   top: 0;
@@ -585,19 +685,51 @@ const handleUploadFile = async (e: Event) => {
   height: 100%;
   opacity: 0;
   cursor: pointer;
+  z-index: 1;
 }
-.input_btn {
-  width: 200px;
-  background-color: #409eff;
-  opacity: 0.8;
-  position: relative;
-  padding: 8px 16px;
-  border-radius: 8px;
-  margin: 0 auto;
-  user-select: none;
+
+.file-info {
+  display: flex;
+  gap: 24px;
+  font-size: 13px;
+  color: #606266;
+  flex-wrap: wrap;
+  justify-content: center;
 }
-.input_btn:hover {
-  opacity: 1;
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: #f5f7fa;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.info-item:hover {
+  background-color: #ecf5ff;
+  color: var(--el-color-primary);
+}
+
+.info-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .bottom_box {
+    padding: 16px;
+  }
+
+  .file-info {
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .info-item {
+    padding: 4px 8px;
+  }
 }
 :deep(.messageBac) {
   position: fixed;
@@ -621,18 +753,25 @@ const handleUploadFile = async (e: Event) => {
   border-radius: 8px;
   padding: 4px 16px;
 }
-/* 滚动条 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* 滚动条优化 */
+.content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
-::-webkit-scrollbar-thumb {
-  background-color: #404755;
+
+.content::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
   border-radius: 4px;
-  cursor: pointer;
 }
-::-webkit-scrollbar-thumb:hover {
-  background-color: #4d5564;
+
+.content::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background-color: #a8a8a8;
 }
 @keyframes fadeIn {
   0% {

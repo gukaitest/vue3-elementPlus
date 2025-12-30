@@ -357,11 +357,11 @@ class UserBehaviorCollector {
 
     this.batchReportQueue.queue.push(behaviorData);
 
-    if (this.config.enableConsoleLog) {
-      console.log(
-        `📝 添加行为到批量队列，当前队列长度: ${this.batchReportQueue.queue.length}/${this.batchReportQueue.config.batchSize}`
-      );
-    }
+    // if (this.config.enableConsoleLog) {
+    //   console.log(
+    //     `📝 添加行为到批量队列，当前队列长度: ${this.batchReportQueue.queue.length}/${this.batchReportQueue.config.batchSize}`
+    //   );
+    // }
 
     // 检查是否达到批量大小
     if (this.batchReportQueue.queue.length >= this.batchReportQueue.config.batchSize) {
@@ -504,7 +504,7 @@ class UserBehaviorCollector {
 
     // 输出到控制台
     if (this.config.enableConsoleLog !== false) {
-      this.logToConsole(behaviorData);
+      // this.logToConsole(behaviorData);
     }
 
     // 上报行为

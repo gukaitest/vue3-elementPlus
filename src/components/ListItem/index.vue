@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { defineEmits, defineProps } from 'vue';
+import { ElButton } from 'element-plus';
+
 interface FileUploadStatus {
   allChunkList: FileChunk[]; // 文件分块列表
   cancel: null | (() => void); // 取消上传的函数，可能为 null
@@ -39,8 +40,18 @@ const resumeUpload = (item: FileUploadStatus) => {
 };
 // 取消
 const cancelSingle = (item: FileUploadStatus) => {
+  // 如果已上传完成，不允许取消
+  if (item.state === 4) {
+    return;
+  }
   emit('cancelSingle', item);
 };
+
+// 判断是否可以取消（上传完成后不可取消）
+const canCancel = (item: FileUploadStatus) => {
+  return item.state !== 4;
+};
+
 // 显示文件大小
 const fileSize = (val: number) => {
   const m = 1024 * 1024;
@@ -93,10 +104,24 @@ defineOptions({ name: 'ListItem' });
       <!-- 右侧按钮 -->
       <div class="rightBtn">
         <!-- 必须解析完才能暂停，不然是没有接口取消调用的 -->
-        <div v-if="[2].includes(item.state)" class="redBtn my_btn" @click="pauseUpload(item)">暂停</div>
+        <ElButton v-if="[2].includes(item.state)" type="warning" size="small" plain @click="pauseUpload(item)">
+          暂停
+        </ElButton>
         <!-- 暂停中显示的继续按钮 -->
-        <div v-if="[3, 5].includes(item.state)" class="my_btn blueBtn" @click="resumeUpload(item)">继续</div>
-        <div class="my_btn redBtn" @click="cancelSingle(item)">取消</div>
+        <ElButton v-if="[3, 5].includes(item.state)" type="primary" size="small" plain @click="resumeUpload(item)">
+          继续
+        </ElButton>
+        <!-- 取消按钮：上传完成后禁用 -->
+        <ElButton
+          type="danger"
+          size="small"
+          plain
+          :disabled="!canCancel(item)"
+          :class="{ 'cancel-btn-disabled': !canCancel(item) }"
+          @click="cancelSingle(item)"
+        >
+          取消
+        </ElButton>
       </div>
     </div>
   </div>
@@ -157,34 +182,26 @@ defineOptions({ name: 'ListItem' });
 .rightBtn {
   display: flex;
   font-size: 14px;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   flex-shrink: 0;
-  flex-basis: 180px;
-  /* margin-top: -24px; */
+  flex-basis: 200px;
+  gap: 8px;
+  padding-right: 8px;
 }
-.my_btn {
-  padding: 2px 10px;
-  height: 24px;
-  border-radius: 8px;
-  display: flex;
-  cursor: pointer;
-  margin: 10px 8px;
-  opacity: 0.8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  user-select: none;
-  min-width: 48px;
+
+.rightBtn :deep(.el-button) {
+  min-width: 64px;
+  font-size: 13px;
 }
-.my_btn:hover {
-  opacity: 1;
+
+.cancel-btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
 }
-.blueBtn {
-  background-color: #409eff;
-}
-.redBtn {
-  background-color: #f56c6c;
+
+.cancel-btn-disabled:hover {
+  opacity: 0.5;
 }
 .bottom_hint {
   opacity: 0.8;

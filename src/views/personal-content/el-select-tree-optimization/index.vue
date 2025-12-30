@@ -14,7 +14,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
   <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
     <ElTabPane label="虚拟SelectTree优化" name="first">
       <SelectTree v-if="activeName === 'first'" v-model:select-value="selectValue"></SelectTree>
-      <div>当前选中的值：{{ selectValue }}</div>
+      <!-- <div>当前选中的值：{{ selectValue }}</div> -->
     </ElTabPane>
 
     <!--

@@ -1,0 +1,1 @@
+import{_ as e}from"./look-forward.vue_vue_type_script_setup_true_lang-DQ_Pjcgd.js";import{d as n,c as _,o as c}from"./index-C6tnI6Xh.js";const i=n({name:"function_hide-child_one",__name:"index",setup(t){return(a,r)=>{const o=e;return c(),_(o)}}});export{i as default};

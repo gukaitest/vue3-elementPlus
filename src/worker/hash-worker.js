@@ -1,5 +1,5 @@
-// import SparkMD5 from './spark-md5.min.js'
-globalThis.importScripts('spark-md5.min.js');
+// 使用 import 方式导入 spark-md5（需要在创建 Worker 时使用 { type: 'module' }）
+import SparkMD5 from 'spark-md5';
 
 // 创建文件切片
 function createFileChunk(file, chunkSize) {
@@ -19,8 +19,7 @@ function createFileChunk(file, chunkSize) {
 // 加载并计算文件切片的MD5
 async function calculateChunksHash(fileChunkList) {
   // 初始化脚本
-  // const spark = new SparkMD5.ArrayBuffer()
-  const spark = new globalThis.SparkMD5.ArrayBuffer();
+  const spark = new SparkMD5.ArrayBuffer();
 
   // 计算切片进度（拓展功能，可自行添加）
   let percentage = 0;

@@ -80,12 +80,9 @@ const topRightStyle = computed(() => ({
 // 生成文件 hash（web-worker）
 const useWorker = (file: File): Promise<WorkerResult> => {
   return new Promise(resolve => {
-    const worker = new Worker(
-      new URL('@/worker/hash-worker.js', import.meta.url)
-      // {
-      //   type: 'module',
-      // }
-    );
+    const worker = new Worker(new URL('@/worker/hash-worker.js', import.meta.url), {
+      type: 'module'
+    });
     worker.postMessage({ file, chunkSize });
     worker.onmessage = e => {
       const { fileHash, fileChunkList } = e.data;

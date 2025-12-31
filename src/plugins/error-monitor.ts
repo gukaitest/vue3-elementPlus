@@ -397,9 +397,9 @@ class ErrorCollector {
     this.errors.push(errorInfo);
 
     // 输出到控制台
-    if (this.config.enableConsoleLog !== false) {
-      this.logToConsole(errorInfo);
-    }
+    // if (this.config.enableConsoleLog !== false) {
+    //   this.logToConsole(errorInfo);
+    // }
 
     // 上报错误
     this.reportError(errorInfo);

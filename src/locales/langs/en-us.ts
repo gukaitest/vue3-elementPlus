@@ -171,7 +171,7 @@ const local: App.I18n.Schema = {
     'personal-content_table-optimization': 'table Optimization',
     'personal-content_echarts-optimization': 'echarts Optimization',
     'personal-content_el-select-tree-optimization': 'Select Tree Optimization',
-    'personal-content_frontendmonitoring': 'Frontend Monitoring',
+    'personal-content_frontend-monitoring': 'Frontend Monitoring',
     document: 'Document',
     document_project: 'Project Document',
     'document_project-link': 'Project Document(External Link)',

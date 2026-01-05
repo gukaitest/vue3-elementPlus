@@ -420,12 +420,12 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
-        name: 'personal-content_frontendmonitoring',
-        path: '/personal-content/frontendmonitoring',
-        component: 'view.personal-content_frontendmonitoring',
+        name: 'personal-content_frontend-monitoring',
+        path: '/personal-content/frontend-monitoring',
+        component: 'view.personal-content_frontend-monitoring',
         meta: {
-          title: 'personal-content_frontendmonitoring',
-          i18nKey: 'route.personal-content_frontendmonitoring',
+          title: 'personal-content_frontend-monitoring',
+          i18nKey: 'route.personal-content_frontend-monitoring',
           order: 8,
           icon: 'streamline-ultimate:coding-apps-website-detect-virus-monitor-search-bold'
         }

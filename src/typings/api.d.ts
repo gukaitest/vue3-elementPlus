@@ -23,7 +23,16 @@ declare namespace Api {
       products: Product[];
       total: number;
     }
-    // 使用 interface 定义 Data 类型
+    // 产品搜索参数
+    type ProductSearchParams = CommonType.RecordNullable<
+      Pick<Product, 'product_id' | 'product_name' | 'category' | 'price' | 'stock'> &
+        Common.CommonSearchParams & {
+          /** page number (alternative to current) */
+          pageNo?: number;
+          /** page size (alternative to size) */
+          pageSize?: number;
+        }
+    >;
   }
   namespace performanceOptimization {
     // 对应的后端字段如下：summaryData	_id	name	value	rating	delta	id	navigationType	timestamp	url	userAgent	taskType	leakType	created_at	__v

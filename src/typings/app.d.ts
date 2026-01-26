@@ -666,6 +666,48 @@ declare namespace App {
             };
           };
         };
+        personalContent: {
+          productManege: {
+            title: string;
+            category: string;
+            price: string;
+            product_id: string;
+            product_name: string;
+            stock: string;
+            form: {
+              category: string;
+              price: string;
+              product_id: string;
+              product_name: string;
+              stock: string;
+            };
+            addProduct: string;
+            editProduct: string;
+            categoryOptions: Record<
+              | '宠物用品'
+              | '数码配件'
+              | '乐器'
+              | '电脑'
+              | '体育用品'
+              | '母婴用品'
+              | '手机'
+              | '家电'
+              | '家居用品'
+              | '书籍'
+              | '户外运动装备'
+              | '美妆护肤'
+              | '办公用品'
+              | '服装'
+              | '鞋履'
+              | '厨卫用具'
+              | '床上用品'
+              | '玩具'
+              | '箱包'
+              | '食品饮料',
+              string
+            >;
+          };
+        };
       };
       form: {
         required: string;

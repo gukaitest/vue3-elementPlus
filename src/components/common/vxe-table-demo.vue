@@ -73,7 +73,7 @@ const tableData = ref<Api.productsList.Product[]>([]);
 const getOptionData = async () => {
   console.log('2222222222222');
   loading.value = true;
-  await fetchGetProductList({ search: '', pageNo: params.pageNo, pageSize: params.pageSize })
+  await fetchGetProductList({ product_name: '', pageNo: params.pageNo, pageSize: params.pageSize })
     .then(res => {
       console.log('res', res);
       // tableData.value = res?.data?.products || [];

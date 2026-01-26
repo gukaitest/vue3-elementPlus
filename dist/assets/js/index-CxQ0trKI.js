@@ -1,1 +1,0 @@
-import{_ as o}from"./exception-base.vue_vue_type_script_setup_true_lang-CQFdku1j.js";import{r as n,K as t,v as a}from"./vue-vendor-DFucVWOH.js";import"./index-CCDP2_BA.js";const i=n({name:"500",__name:"index",setup(r){return(_,c)=>{const e=o;return a(),t(e,{type:"500"})}}});export{i as default};

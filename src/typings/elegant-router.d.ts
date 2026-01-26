@@ -70,6 +70,7 @@ declare module "@elegant-router/types" {
     "personal-content_frontend-monitoring": "/personal-content/frontend-monitoring";
     "personal-content_image-loading-optimization": "/personal-content/image-loading-optimization";
     "personal-content_large-file-upload": "/personal-content/large-file-upload";
+    "personal-content_product-manege": "/personal-content/product-manege";
     "personal-content_select-optimization": "/personal-content/select-optimization";
     "personal-content_table-optimization": "/personal-content/table-optimization";
     "plugin": "/plugin";
@@ -204,6 +205,7 @@ declare module "@elegant-router/types" {
     | "personal-content_frontend-monitoring"
     | "personal-content_image-loading-optimization"
     | "personal-content_large-file-upload"
+    | "personal-content_product-manege"
     | "personal-content_select-optimization"
     | "personal-content_table-optimization"
     | "plugin_barcode"

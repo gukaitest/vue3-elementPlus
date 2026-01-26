@@ -172,6 +172,7 @@ const local: App.I18n.Schema = {
     'personal-content_echarts-optimization': 'echarts优化',
     'personal-content_el-select-tree-optimization': '下拉树优化',
     'personal-content_frontend-monitoring': '前端监控',
+    'personal-content_product-manege': '产品管理',
     document: '文档',
     document_project: '项目文档',
     'document_project-link': '项目文档(外链)',
@@ -239,6 +240,47 @@ const local: App.I18n.Schema = {
     plugin_tables_vtable: 'VTable'
   },
   page: {
+    personalContent: {
+      productManege: {
+        product_id: '产品ID',
+        product_name: '产品名称',
+        title: '产品管理',
+        category: '分类',
+        price: '价格',
+        stock: '库存',
+        form: {
+          product_id: '请输入产品ID',
+          product_name: '请输入产品名称',
+          category: '请输入分类',
+          price: '请输入价格',
+          stock: '请输入库存'
+        },
+        addProduct: '新增产品',
+        editProduct: '编辑产品',
+        categoryOptions: {
+          宠物用品: '宠物用品',
+          数码配件: '数码配件',
+          乐器: '乐器',
+          电脑: '电脑',
+          体育用品: '体育用品',
+          母婴用品: '母婴用品',
+          手机: '手机',
+          家电: '家电',
+          家居用品: '家居用品',
+          书籍: '书籍',
+          户外运动装备: '户外运动装备',
+          美妆护肤: '美妆护肤',
+          办公用品: '办公用品',
+          服装: '服装',
+          鞋履: '鞋履',
+          厨卫用具: '厨卫用具',
+          床上用品: '床上用品',
+          玩具: '玩具',
+          箱包: '箱包',
+          食品饮料: '食品饮料'
+        }
+      }
+    },
     login: {
       common: {
         loginOrRegister: '登录 / 注册',

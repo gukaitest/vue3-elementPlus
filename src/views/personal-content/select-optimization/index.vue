@@ -62,7 +62,7 @@ const getOptionData = async () => {
     startFPSMonitor(fpsConfig);
 
     await fetchGetProductList({
-      search: filterInput.value,
+      product_name: filterInput.value,
       pageNo: params.pageNo,
       pageSize: params.pageSize
     }).then(res => {

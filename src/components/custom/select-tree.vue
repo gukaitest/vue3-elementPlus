@@ -111,7 +111,7 @@ onMounted(() => {
   // 多选模式
   // dataValue.value = props.selectValue || [];
   // 服务端请求数据
-  fetchGetProductList({ search: '', pageNo: 1, pageSize: 3000 }).then((res: any) => {
+  fetchGetProductList({ product_name: '', pageNo: 1, pageSize: 3000 }).then((res: any) => {
     console.log('XXXXXXXXXXXXXX res', res);
     if (res.data) {
       listData.value = res.data.products.map((item: any) => {

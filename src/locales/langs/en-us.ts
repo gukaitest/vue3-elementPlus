@@ -172,6 +172,7 @@ const local: App.I18n.Schema = {
     'personal-content_echarts-optimization': 'echarts Optimization',
     'personal-content_el-select-tree-optimization': 'Select Tree Optimization',
     'personal-content_frontend-monitoring': 'Frontend Monitoring',
+    'personal-content_product-manege': 'Product Manage',
     document: 'Document',
     document_project: 'Project Document',
     'document_project-link': 'Project Document(External Link)',
@@ -239,6 +240,47 @@ const local: App.I18n.Schema = {
     plugin_tables_vtable: 'VTable'
   },
   page: {
+    personalContent: {
+      productManege: {
+        product_id: 'Product ID',
+        product_name: 'Product Name',
+        title: 'Product Manage',
+        category: 'Category',
+        price: 'Price',
+        stock: 'Stock',
+        form: {
+          product_id: 'Please enter product ID',
+          product_name: 'Please enter product name',
+          category: 'Please enter category',
+          price: 'Please enter price',
+          stock: 'Please enter stock'
+        },
+        addProduct: 'Add Product',
+        editProduct: 'Edit Product',
+        categoryOptions: {
+          宠物用品: 'Pet Supplies',
+          数码配件: 'Digital Accessories',
+          乐器: 'Musical Instruments',
+          电脑: 'Computers',
+          体育用品: 'Sports Goods',
+          母婴用品: 'Baby & Maternity',
+          手机: 'Mobile Phones',
+          家电: 'Home Appliances',
+          家居用品: 'Home Goods',
+          书籍: 'Books',
+          户外运动装备: 'Outdoor Sports Equipment',
+          美妆护肤: 'Beauty & Skincare',
+          办公用品: 'Office Supplies',
+          服装: 'Clothing',
+          鞋履: 'Footwear',
+          厨卫用具: 'Kitchen & Bath',
+          床上用品: 'Bedding',
+          玩具: 'Toys',
+          箱包: 'Luggage & Bags',
+          食品饮料: 'Food & Beverages'
+        }
+      }
+    },
     login: {
       common: {
         loginOrRegister: 'Login / Register',

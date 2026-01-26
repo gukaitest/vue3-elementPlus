@@ -19,7 +19,7 @@ const paramsPage = reactive({
 // 模拟大数据生成
 const getProductData = async () => {
   loading.value = true;
-  await fetchGetProductList({ search: filterInput.value, pageNo: paramsPage.pageNo, pageSize: paramsPage.pageSize })
+  await fetchGetProductList({ product_name: filterInput.value, pageNo: paramsPage.pageNo, pageSize: paramsPage.pageSize })
     .then(res => {
       console.log('res', res);
       productsData.value = res?.data?.products;
@@ -365,7 +365,7 @@ const getProductData = async (): Promise<Api.productsList.Product[]> => {
   loading.value = true;
   try {
     const res = await fetchGetProductList({
-      search: filterInput.value,
+      product_name: filterInput.value,
       pageNo: paramsPage.pageNo,
       pageSize: paramsPage.pageSize
     });

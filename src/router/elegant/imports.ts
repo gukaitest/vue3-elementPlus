@@ -45,6 +45,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "personal-content_frontend-monitoring": () => import("@/views/personal-content/frontend-monitoring/index.vue"),
   "personal-content_image-loading-optimization": () => import("@/views/personal-content/image-loading-optimization/index.vue"),
   "personal-content_large-file-upload": () => import("@/views/personal-content/large-file-upload/index.vue"),
+  "personal-content_product-manege": () => import("@/views/personal-content/product-manege/index.vue"),
   "personal-content_select-optimization": () => import("@/views/personal-content/select-optimization/index.vue"),
   "personal-content_table-optimization": () => import("@/views/personal-content/table-optimization/index.vue"),
   plugin_barcode: () => import("@/views/plugin/barcode/index.vue"),

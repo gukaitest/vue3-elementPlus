@@ -1,0 +1,1 @@
+import{r as s,t,v as l,y as a,ao as n}from"./vue-vendor-DLKW-W3j.js";const o=["href"],c=s({name:"WebSiteLink",__name:"web-site-link",props:{label:{},link:{}},setup(r){return(e,i)=>(l(),t("p",null,[a("span",null,n(e.label),1),a("a",{class:"text-blue-500",href:e.link,target:"#"},n(e.link),9,o)]))}});export{c as _};

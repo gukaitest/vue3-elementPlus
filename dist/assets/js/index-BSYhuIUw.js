@@ -1,0 +1,1 @@
+import{_ as e}from"./look-forward.vue_vue_type_script_setup_true_lang-Cho0lpcF.js";import{r as n,K as r,v as t}from"./vue-vendor-DLKW-W3j.js";import"./index-DqhHIM60.js";const i=n({name:"function_super-page",__name:"index",setup(a){return(_,c)=>{const o=e;return t(),r(o)}}});export{i as default};

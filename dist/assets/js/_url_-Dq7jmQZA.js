@@ -1,1 +1,0 @@
-import{r as a,aH as s,bc as r,t as o,v as t,y as n}from"./vue-vendor-DFucVWOH.js";const c={class:"h-full"},l=["src"],m=a({name:"iframe-page",__name:"[url]",props:{url:{}},setup(i){return s(()=>{}),r(()=>{}),(e,u)=>(t(),o("div",c,[n("iframe",{id:"iframePage",class:"size-full",src:e.url},null,8,l)]))}});export{m as default};

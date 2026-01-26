@@ -453,6 +453,17 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'personal-content_product-manege',
+        path: '/personal-content/product-manege',
+        component: 'view.personal-content_product-manege',
+        meta: {
+          title: 'personal-content_product-manege',
+          i18nKey: 'route.personal-content_product-manege',
+          order: 9,
+          icon: 'pixel:product-management'
+        }
+      },
+      {
         name: 'personal-content_select-optimization',
         path: '/personal-content/select-optimization',
         component: 'view.personal-content_select-optimization',

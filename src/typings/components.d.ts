@@ -114,6 +114,7 @@ declare module 'vue' {
     IconUilSearch: typeof import('~icons/uil/search')['default']
     ImageLoadNew: typeof import('./../components/custom/image-load-new.vue')['default']
     ImageLoadOld: typeof import('./../components/custom/image-load-old.vue')['default']
+    Introduction: typeof import('./../components/custom/Introduction.vue')['default']
     LangSwitch: typeof import('./../components/common/lang-switch.vue')['default']
     ListItem: typeof import('./../components/ListItem/index.vue')['default']
     LookForward: typeof import('./../components/custom/look-forward.vue')['default']

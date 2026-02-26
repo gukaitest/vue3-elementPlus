@@ -3,8 +3,14 @@ import { URL, fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import viteCompression from 'vite-plugin-compression';
 import { visualizer } from 'rollup-plugin-visualizer';
+import viteImagemin from '@vheemstra/vite-plugin-imagemin';
+// @ts-expect-error 无官方类型，见 imagemin-plugins.d.ts
+import imageminMozjpeg from 'imagemin-mozjpeg';
+// @ts-expect-error 无官方类型，见 imagemin-plugins.d.ts
+import imageminWebp from 'imagemin-webp';
 import { setupVitePlugins } from './build/plugins';
 import { createViteProxy, getBuildTime } from './build/config';
+import { vitePluginImgsWebp } from './vite-plugin-imgs-webp';
 
 export default defineConfig(configEnv => {
   const viteEnv = loadEnv(configEnv.mode, process.cwd()) as unknown as Env.ImportMeta;
@@ -31,6 +37,21 @@ export default defineConfig(configEnv => {
     },
     plugins: [
       ...setupVitePlugins(viteEnv, buildTime),
+      // 构建时 assets/imgs 下请求 .webp 时由此插件从 .jpg 生成并输出
+      vitePluginImgsWebp({ quality: 82 }),
+      // 图片优化：压缩 jpg，并为 dist 中的 jpg 生成 webp 版本
+      viteImagemin({
+        plugins: {
+          jpg: imageminMozjpeg({ quality: 85 })
+        },
+        makeWebp: {
+          plugins: {
+            jpg: imageminWebp({ quality: 82 })
+          },
+          skipIfLargerThan: 'smallest'
+        },
+        verbose: true
+      }),
       // Gzip 压缩插件 - 构建时生成 .gz 文件
       viteCompression({
         verbose: true, // 是否在控制台输出压缩结果

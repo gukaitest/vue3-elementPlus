@@ -10,7 +10,10 @@ let observer: IntersectionObserver | null = null;
 const CONFIG = {
   totalImages: 9,
   pageSize: 3,
-  pathTemplate: (num: string) => new URL(`../../assets/imgs/${num}.jpg`, import.meta.url).href,
+  pathTemplate: (num: string) => {
+    const ext = import.meta.env.PROD ? 'webp' : 'jpg';
+    return new URL(`../../assets/imgs/${num}.${ext}`, import.meta.url).href;
+  },
   observerOptions: {
     root: null,
     rootMargin: '0px 0px 200px 0px',

@@ -2,12 +2,12 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 defineOptions({ name: 'ImageLoadOld' });
 
-// 生成静态图片路径列表（假设有 001.jpg ~ 009.jpg）
+// 生成静态图片路径列表（生产构建使用 WebP，开发使用原图）
 const totalImages = 9;
+const imgExt = import.meta.env.PROD ? 'webp' : 'jpg';
 const allImages = Array.from({ length: totalImages }, (_, i) => {
   const num = (i + 1).toString().padStart(3, '0');
-  // console.log(`../assets/imgs/${num}.jpg`, import.meta.url);
-  return new URL(`../../assets/imgs/${num}.jpg`, import.meta.url).href;
+  return new URL(`../../assets/imgs/${num}.${imgExt}`, import.meta.url).href;
 });
 
 // 响应式数据

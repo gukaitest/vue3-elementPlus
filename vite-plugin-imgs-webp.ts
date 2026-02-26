@@ -9,17 +9,29 @@ import process from 'node:process';
 import type { Plugin } from 'vite';
 
 const IMGS_VIRTUAL_PREFIX = '\0imgs-webp:';
-const IMGS_RE = /[/\\]assets[/\\]imgs[/\\][^/\\]+\.webp$/;
+const IMGS_RE = /[/\\]assets[/\\]imgs[/\\][^/\\]+\.webp(\?.*)?$/;
 
 function isImgsWebpRequest(id: string): boolean {
   return IMGS_RE.test(id.replace(/^\0imgs-webp:/, ''));
 }
 
 function getSourcePath(webpId: string): string | null {
-  const abs = path.isAbsolute(webpId) ? webpId : path.resolve(process.cwd(), webpId);
-  const base = abs.replace(/\.webp$/i, '');
+  const base = webpId.replace(/\?.*$/, '').replace(/\.webp$/i, '');
+  const baseName = path.basename(base);
+
+  if (path.isAbsolute(base)) {
+    const dir = path.dirname(base);
+    for (const ext of ['.jpg', '.jpeg', '.png']) {
+      const p = path.join(dir, baseName + ext);
+      if (fs.existsSync(p)) return p;
+    }
+    return null;
+  }
+
+  // 相对路径（如 ../../assets/imgs/001.webp）从项目 src 下解析
+  const fromSrc = path.join(process.cwd(), 'src', 'assets', 'imgs', baseName);
   for (const ext of ['.jpg', '.jpeg', '.png']) {
-    const p = `${base}${ext}`;
+    const p = fromSrc + ext;
     if (fs.existsSync(p)) return p;
   }
   return null;
@@ -30,7 +42,8 @@ export function vitePluginImgsWebp(options?: { quality?: number }): Plugin {
 
   return {
     name: 'vite-plugin-imgs-webp',
-    apply: 'build',
+    // 必须优先于 Vite 默认 load，否则虚拟 id 会被 load-fallback 当文件路径读，触发 null bytes 报错
+    enforce: 'pre',
     resolveId(id) {
       if (isImgsWebpRequest(id)) {
         return `${IMGS_VIRTUAL_PREFIX}${id}`;
@@ -40,12 +53,14 @@ export function vitePluginImgsWebp(options?: { quality?: number }): Plugin {
     async load(id) {
       if (!id.startsWith(IMGS_VIRTUAL_PREFIX)) return null;
 
-      const rawId = id.slice(IMGS_VIRTUAL_PREFIX.length);
+      const rawId = id.slice(IMGS_VIRTUAL_PREFIX.length).replace(/\?.*$/, '');
       const sourcePath = getSourcePath(rawId);
 
       if (!sourcePath) {
-        this.warn(`[imgs-webp] 未找到源图: ${rawId.replace(/\.webp$/i, '')}`);
-        return null;
+        const msg = `[vite-plugin-imgs-webp] 未找到源图，请确保存在 src/assets/imgs/001.jpg 等: ${rawId}`;
+        this.warn(msg);
+        // 返回占位避免落入 load-fallback（否则会用虚拟 id 当路径读，报 null bytes）
+        return 'export default "";';
       }
 
       try {
@@ -59,13 +74,20 @@ export function vitePluginImgsWebp(options?: { quality?: number }): Plugin {
         });
 
         const baseName = path.basename(rawId, '.webp');
-        const refId = this.emitFile({
-          type: 'asset',
-          name: `imgs/${baseName}.webp`,
-          source: Buffer.from(webpBuffer)
-        });
+        const webpBuf = Buffer.from(webpBuffer);
 
-        return `export default import.meta.ROLLUP_FILE_URL_${refId};`;
+        // 构建时：emit 资源并导出 ROLLUP_FILE_URL
+        if (typeof this.emitFile === 'function') {
+          const refId = this.emitFile({
+            type: 'asset',
+            name: `${baseName}.webp`,
+            source: webpBuf
+          });
+          return `export default import.meta.ROLLUP_FILE_URL_${refId};`;
+        }
+
+        // 开发时：无 emitFile，直接导出 data URL 供 img 使用
+        return `export default "data:image/webp;base64,${webpBuf.toString('base64')}";`;
       } catch (e) {
         this.error(e as Error);
         return null;

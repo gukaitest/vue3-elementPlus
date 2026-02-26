@@ -104,7 +104,7 @@ export default defineConfig(configEnv => {
       // 代码分割优化配置
       rollupOptions: {
         output: {
-          // 文件命名规则
+          // 文件命名规则。vitePluginImgsWebp 产出的 webp 会落在 assets/webp/[name]-[hash].webp（如 001-xxx.webp）
           chunkFileNames: 'assets/js/[name]-[hash].js',
           entryFileNames: 'assets/js/[name]-[hash].js',
           assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',

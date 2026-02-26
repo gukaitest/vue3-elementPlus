@@ -1,22 +1,20 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
+import img001 from '../../assets/imgs/001.webp?url';
+import img002 from '../../assets/imgs/002.webp?url';
+import img003 from '../../assets/imgs/003.webp?url';
+import img004 from '../../assets/imgs/004.webp?url';
+import img005 from '../../assets/imgs/005.webp?url';
+import img006 from '../../assets/imgs/006.webp?url';
+import img007 from '../../assets/imgs/007.webp?url';
+import img008 from '../../assets/imgs/008.webp?url';
+import img009 from '../../assets/imgs/009.webp?url';
+
 defineOptions({ name: 'ImageLoadOld' });
 
-// 使用静态路径让 Vite 在构建时解析每张图（动态 new URL 在生产会变成 undefined）
-// 生产：每个 .webp 走 vitePluginImgsWebp 从 .jpg 转出
-// 开发：glob 匹配实际存在的 .jpg
+// 生产：用 import ?url 让 Vite 解析为插件输出的带 hash 的 URL，产物在 dist/assets/webp/001-[hash].webp
 const globJpg = import.meta.glob<string>('../../assets/imgs/*.jpg', { eager: true, as: 'url' });
-const allImagesProd = [
-  new URL('../../assets/imgs/001.webp', import.meta.url).href,
-  new URL('../../assets/imgs/002.webp', import.meta.url).href,
-  new URL('../../assets/imgs/003.webp', import.meta.url).href,
-  new URL('../../assets/imgs/004.webp', import.meta.url).href,
-  new URL('../../assets/imgs/005.webp', import.meta.url).href,
-  new URL('../../assets/imgs/006.webp', import.meta.url).href,
-  new URL('../../assets/imgs/007.webp', import.meta.url).href,
-  new URL('../../assets/imgs/008.webp', import.meta.url).href,
-  new URL('../../assets/imgs/009.webp', import.meta.url).href
-];
+const allImagesProd = [img001, img002, img003, img004, img005, img006, img007, img008, img009];
 const allImagesDev = Object.entries(globJpg)
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([, url]) => url);

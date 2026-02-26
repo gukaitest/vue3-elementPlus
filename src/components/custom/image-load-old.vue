@@ -2,13 +2,27 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 defineOptions({ name: 'ImageLoadOld' });
 
-// 生成静态图片路径列表（生产构建使用 WebP，开发使用原图）
-const totalImages = 9;
-const imgExt = import.meta.env.PROD ? 'webp' : 'jpg';
-const allImages = Array.from({ length: totalImages }, (_, i) => {
-  const num = (i + 1).toString().padStart(3, '0');
-  return new URL(`../../assets/imgs/${num}.${imgExt}`, import.meta.url).href;
-});
+// 使用静态路径让 Vite 在构建时解析每张图（动态 new URL 在生产会变成 undefined）
+// 生产：每个 .webp 走 vitePluginImgsWebp 从 .jpg 转出
+// 开发：glob 匹配实际存在的 .jpg
+const globJpg = import.meta.glob<string>('../../assets/imgs/*.jpg', { eager: true, as: 'url' });
+const allImagesProd = [
+  new URL('../../assets/imgs/001.webp', import.meta.url).href,
+  new URL('../../assets/imgs/002.webp', import.meta.url).href,
+  new URL('../../assets/imgs/003.webp', import.meta.url).href,
+  new URL('../../assets/imgs/004.webp', import.meta.url).href,
+  new URL('../../assets/imgs/005.webp', import.meta.url).href,
+  new URL('../../assets/imgs/006.webp', import.meta.url).href,
+  new URL('../../assets/imgs/007.webp', import.meta.url).href,
+  new URL('../../assets/imgs/008.webp', import.meta.url).href,
+  new URL('../../assets/imgs/009.webp', import.meta.url).href
+];
+const allImagesDev = Object.entries(globJpg)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, url]) => url);
+const allImages = import.meta.env.PROD ? allImagesProd : allImagesDev;
+
+const totalImages = allImages.length;
 
 // 响应式数据
 const loadedImages = ref<string[]>([]);

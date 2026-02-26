@@ -6,14 +6,30 @@ type ImageStatus = boolean[];
 type ObserverCallback = (entries: IntersectionObserverEntry[]) => void;
 
 let observer: IntersectionObserver | null = null;
-// 配置常量
+// 使用静态路径让 Vite 在构建时解析每张图（动态 new URL 在生产会变成 undefined）
+// 生产：每个 .webp 走 vitePluginImgsWebp 从 .jpg 转出；开发：glob 匹配实际存在的 .jpg
+const globJpg = import.meta.glob<string>('../../assets/imgs/*.jpg', { eager: true, as: 'url' });
+const allImagesProd = [
+  new URL('../../assets/imgs/001.webp', import.meta.url).href,
+  new URL('../../assets/imgs/002.webp', import.meta.url).href,
+  new URL('../../assets/imgs/003.webp', import.meta.url).href,
+  new URL('../../assets/imgs/004.webp', import.meta.url).href,
+  new URL('../../assets/imgs/005.webp', import.meta.url).href,
+  new URL('../../assets/imgs/006.webp', import.meta.url).href,
+  new URL('../../assets/imgs/007.webp', import.meta.url).href,
+  new URL('../../assets/imgs/008.webp', import.meta.url).href,
+  new URL('../../assets/imgs/009.webp', import.meta.url).href
+];
+const allImagesDev = Object.entries(globJpg)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([, url]) => url);
+const allImages = import.meta.env.PROD ? allImagesProd : allImagesDev;
+
+const totalImages = allImages.length;
 const CONFIG = {
-  totalImages: 9,
+  totalImages,
   pageSize: 3,
-  pathTemplate: (num: string) => {
-    const ext = import.meta.env.PROD ? 'webp' : 'jpg';
-    return new URL(`../../assets/imgs/${num}.${ext}`, import.meta.url).href;
-  },
+  allImages,
   observerOptions: {
     root: null,
     rootMargin: '0px 0px 200px 0px',
@@ -45,16 +61,6 @@ const setItemRef = (el: Element | ComponentPublicInstance | null) => {
     }
   }
 };
-
-// 图片数据生成
-const generateImageUrls = (): string[] => {
-  return Array.from({ length: CONFIG.totalImages }, (_, i) => {
-    const num = (i + 1).toString().padStart(3, '0');
-    return CONFIG.pathTemplate(num);
-  });
-};
-
-const allImages = generateImageUrls();
 
 // Intersection Observer 逻辑
 const handleIntersection: ObserverCallback = entries => {
@@ -107,16 +113,16 @@ const loadImages = async () => {
   const end = start + CONFIG.pageSize;
 
   // 更新加载数据
-  loadedImages.value = [...loadedImages.value, ...allImages.slice(start, end)];
+  loadedImages.value = [...loadedImages.value, ...CONFIG.allImages.slice(start, end)];
 
   // 严格类型初始化
   loadedStatus.value = [
     ...loadedStatus.value,
-    ...Array.from<boolean>({ length: Math.min(CONFIG.pageSize, allImages.length - start) })
+    ...Array.from<boolean>({ length: Math.min(CONFIG.pageSize, CONFIG.allImages.length - start) })
   ];
 
   // 更新状态
-  hasMore.value = end < allImages.length;
+  hasMore.value = end < CONFIG.allImages.length;
   currentPage.value += 1;
   loading.value = false;
 

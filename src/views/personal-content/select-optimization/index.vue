@@ -1,10 +1,9 @@
 <script lang="ts" setup>
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
-import { setupWebVitals, startFPSMonitor, stopFPSMonitor, stopLongTaskMonitor } from '@/plugins/web-vitals';
+// import { setupWebVitals, startFPSMonitor, stopFPSMonitor, stopLongTaskMonitor } from '@/plugins/web-vitals';
 import { fetchGetProductList } from '@/service/api';
 import { useAppStore } from '@/store/modules/app';
-
 const filterInput = ref('');
 const element = ref<Element | null>(null);
 const appStore = useAppStore();
@@ -15,34 +14,34 @@ const params = reactive({
 });
 const gap = computed(() => (appStore.isMobile ? 0 : 16));
 
-// FPS监控配置 - 启用数据上报
-const fpsConfig = {
-  enableConsoleLog: true,
-  enableReport: true, // 启用数据上报
-  // reportUrl 会自动从环境变量 VITE_WEB_VITALS_REPORT_URL 中获取
-  // 开发环境: http://localhost:3000/monitor/webvitals
-  // 生产环境: http://47.103.169.121:8084/monitor/webvitals
-  thresholds: {
-    fps: 30 // 30fps作为基准
-  },
-  fpsConfig: {
-    duration: 2000, // 监控2秒（足够覆盖API请求和渲染时间）
-    sampleInterval: 100, // 100ms采样一次
-    enabled: true
-  }
-};
+// FPS监控配置 - 启用数据上报（暂时注释前端监控功能）
+// const fpsConfig = {
+//   enableConsoleLog: true,
+//   enableReport: true, // 启用数据上报
+//   // reportUrl 会自动从环境变量 VITE_WEB_VITALS_REPORT_URL 中获取
+//   // 开发环境: http://localhost:3000/monitor/webvitals
+//   // 生产环境: http://47.103.169.121:8084/monitor/webvitals
+//   thresholds: {
+//     fps: 30 // 30fps作为基准
+//   },
+//   fpsConfig: {
+//     duration: 2000, // 监控2秒（足够覆盖API请求和渲染时间）
+//     sampleInterval: 100, // 100ms采样一次
+//     enabled: true
+//   }
+// };
 
-// 监听Web Vitals事件，处理FPS数据
-const handleWebVitalsEvent = (event: CustomEvent) => {
-  const data = event.detail;
-  if (data.name === 'FPS') {
-    console.log('🎯 Select Optimization FPS监控结果:', {
-      average: `${data.value}fps`,
-      rating: data.rating,
-      action: '下拉框API请求&重新渲染'
-    });
-  }
-};
+// // 监听Web Vitals事件，处理FPS数据（暂时关闭）
+// const handleWebVitalsEvent = (event: CustomEvent) => {
+//   const data = event.detail;
+//   if (data.name === 'FPS') {
+//     console.log('🎯 Select Optimization FPS监控结果:', {
+//       average: `${data.value}fps`,
+//       rating: data.rating,
+//       action: '下拉框API请求&重新渲染'
+//     });
+//   }
+// };
 
 interface ListItem {
   value: number;
@@ -57,9 +56,9 @@ const getOptionData = async () => {
   // loading.value = true;
 
   try {
-    // 开始FPS监控
-    console.log('🚀 开始监控下拉框API请求和渲染FPS...');
-    startFPSMonitor(fpsConfig);
+    // 开始FPS监控（已暂时关闭）
+    // console.log('🚀 开始监控下拉框API请求和渲染FPS...');
+    // startFPSMonitor(fpsConfig);
 
     await fetchGetProductList({
       product_name: filterInput.value,
@@ -76,7 +75,7 @@ const getOptionData = async () => {
     });
   } finally {
     // loading.value = false;
-    // 等待DOM更新完成后停止FPS监控
+    // 等待DOM更新完成后停止FPS监控（已暂时关闭）
     // await nextTick();
     // setTimeout(() => {
     //   stopFPSMonitor();
@@ -133,30 +132,30 @@ const remoteMethod = async (query: string) => {
 
 const debounceRemoteMethod = useDebounceFn(remoteMethod, 500);
 
-// 生命周期钩子
-onMounted(() => {
-  // 监听Web Vitals事件
-  window.addEventListener('web-vitals', handleWebVitalsEvent as EventListener);
-
-  // 基本设置
-  setupWebVitals({
-    longTaskConfig: {
-      enabled: true,
-      threshold: 50,
-      maxTasks: 100,
-      includeAttribution: true
-    }
-  });
-});
-
-onUnmounted(() => {
-  // 清理事件监听器
-  window.removeEventListener('web-vitals', handleWebVitalsEvent as EventListener);
-  // 停止FPS监控
-  stopFPSMonitor();
-  // 停止长任务监控
-  stopLongTaskMonitor();
-});
+// 生命周期钩子（前端监控相关逻辑暂时关闭）
+// onMounted(() => {
+//   // 监听Web Vitals事件
+//   window.addEventListener('web-vitals', handleWebVitalsEvent as EventListener);
+//
+//   // 基本设置
+//   setupWebVitals({
+//     longTaskConfig: {
+//       enabled: true,
+//       threshold: 50,
+//       maxTasks: 100,
+//       includeAttribution: true
+//     }
+//   });
+// });
+//
+// onUnmounted(() => {
+//   // 清理事件监听器
+//   window.removeEventListener('web-vitals', handleWebVitalsEvent as EventListener);
+//   // 停止FPS监控
+//   stopFPSMonitor();
+//   // 停止长任务监控
+//   stopLongTaskMonitor();
+// });
 </script>
 
 <template>

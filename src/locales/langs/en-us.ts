@@ -166,6 +166,7 @@ const local: App.I18n.Schema = {
     'personal-content': 'Personal Content',
     'personal-content_difficulties-presentation': 'Difficulties Presentation',
     'personal-content_select-optimization': 'Select Optimization',
+    'personal-content_websocket': 'WebSocket',
     'personal-content_large-file-upload': 'large File Upload',
     'personal-content_image-loading-optimization': 'image Loading Optimization',
     'personal-content_table-optimization': 'table Optimization',

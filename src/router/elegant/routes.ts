@@ -484,6 +484,17 @@ export const generatedRoutes: GeneratedRoute[] = [
           order: 4,
           icon: 'material-symbols:data-table-outline'
         }
+      },
+      {
+        name: 'personal-content_websocket',
+        path: '/personal-content/websocket',
+        component: 'view.personal-content_websocket',
+        meta: {
+          title: 'personal-content_websocket',
+          i18nKey: 'route.personal-content_websocket',
+          order: 10,
+          icon: 'material-symbols:data-table-outline'
+        }
       }
     ]
   },

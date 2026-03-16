@@ -1,1 +1,0 @@
-import{_ as e}from"./look-forward.vue_vue_type_script_setup_true_lang-LcAKqMxC.js";import{r as n,K as t,v as r}from"./vue-vendor-DE0dogf3.js";import"./index-RdunjxwI.js";const p=n({name:"function_hide-child_two",__name:"index",setup(_){return(a,c)=>{const o=e;return r(),t(o)}}});export{p as default};

@@ -73,6 +73,7 @@ declare module "@elegant-router/types" {
     "personal-content_product-manege": "/personal-content/product-manege";
     "personal-content_select-optimization": "/personal-content/select-optimization";
     "personal-content_table-optimization": "/personal-content/table-optimization";
+    "personal-content_websocket": "/personal-content/websocket";
     "plugin": "/plugin";
     "plugin_barcode": "/plugin/barcode";
     "plugin_charts": "/plugin/charts";
@@ -208,6 +209,7 @@ declare module "@elegant-router/types" {
     | "personal-content_product-manege"
     | "personal-content_select-optimization"
     | "personal-content_table-optimization"
+    | "personal-content_websocket"
     | "plugin_barcode"
     | "plugin_charts_antv"
     | "plugin_charts_echarts"

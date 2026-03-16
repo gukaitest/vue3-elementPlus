@@ -135,6 +135,7 @@ declare module 'vue' {
     TemplateBase: typeof import('./../components/custom/templateBase.vue')['default']
     ThemeSchemaSwitch: typeof import('./../components/common/theme-schema-switch.vue')['default']
     UseEchart: typeof import('./../components/custom/use-echart.vue')['default']
+    UseWebSocket: typeof import('./../components/custom/useWebSocket.vue')['default']
     VxeTableDemo: typeof import('./../components/common/vxe-table-demo.vue')['default']
     WaveBg: typeof import('./../components/custom/wave-bg.vue')['default']
     WebSiteLink: typeof import('./../components/custom/web-site-link.vue')['default']

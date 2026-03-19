@@ -210,6 +210,7 @@ const routeMap: RouteMap = {
   "multi-menu_second_child": "/multi-menu/second/child",
   "multi-menu_second_child_home": "/multi-menu/second/child/home",
   "personal-content": "/personal-content",
+  "personal-content_canvas-optimization": "/personal-content/canvas-optimization",
   "personal-content_difficulties-presentation": "/personal-content/difficulties-presentation",
   "personal-content_echarts-optimization": "/personal-content/echarts-optimization",
   "personal-content_el-select-tree-optimization": "/personal-content/el-select-tree-optimization",

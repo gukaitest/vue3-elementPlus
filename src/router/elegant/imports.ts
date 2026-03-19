@@ -39,6 +39,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   manage_user: () => import("@/views/manage/user/index.vue"),
   "multi-menu_first_child": () => import("@/views/multi-menu/first_child/index.vue"),
   "multi-menu_second_child_home": () => import("@/views/multi-menu/second_child_home/index.vue"),
+  "personal-content_canvas-optimization": () => import("@/views/personal-content/canvas-optimization/index.vue"),
   "personal-content_difficulties-presentation": () => import("@/views/personal-content/difficulties-presentation/index.vue"),
   "personal-content_echarts-optimization": () => import("@/views/personal-content/echarts-optimization/index.vue"),
   "personal-content_el-select-tree-optimization": () => import("@/views/personal-content/el-select-tree-optimization/index.vue"),

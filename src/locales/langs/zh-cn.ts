@@ -166,6 +166,7 @@ const local: App.I18n.Schema = {
     'personal-content': '个人内容',
     'personal-content_difficulties-presentation': '项目难点展示',
     'personal-content_select-optimization': '下拉框性能优化',
+    'personal-content_canvas-optimization': 'Canvas性能优化',
     'personal-content_websocket': 'WebSocket',
     'personal-content_large-file-upload': '大文件上传',
     'personal-content_image-loading-optimization': '图片滚动加载优化',

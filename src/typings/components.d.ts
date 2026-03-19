@@ -134,6 +134,7 @@ declare module 'vue' {
     TableOptimization: typeof import('./../components/custom/table-optimization.vue')['default']
     TemplateBase: typeof import('./../components/custom/templateBase.vue')['default']
     ThemeSchemaSwitch: typeof import('./../components/common/theme-schema-switch.vue')['default']
+    UseCanvas: typeof import('./../components/custom/useCanvas.vue')['default']
     UseEchart: typeof import('./../components/custom/use-echart.vue')['default']
     UseWebSocket: typeof import('./../components/custom/useWebSocket.vue')['default']
     VxeTableDemo: typeof import('./../components/common/vxe-table-demo.vue')['default']

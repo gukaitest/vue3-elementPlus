@@ -386,7 +386,17 @@ export const generatedRoutes: GeneratedRoute[] = [
       icon: 'streamline-ultimate:task-finger-show'
     },
     children: [
-
+      {
+        name: 'personal-content_canvas-optimization',
+        path: '/personal-content/canvas-optimization',
+        component: 'view.personal-content_canvas-optimization',
+        meta: {
+          title: 'personal-content_canvas-optimization',
+          i18nKey: 'route.personal-content_canvas-optimization',
+          order: 11,
+          icon: 'material-symbols:data-table-outline'
+        }
+      },
       {
         name: 'personal-content_difficulties-presentation',
         path: '/personal-content/difficulties-presentation',
@@ -496,18 +506,7 @@ export const generatedRoutes: GeneratedRoute[] = [
           order: 10,
           icon: 'material-symbols:data-table-outline'
         }
-      },
-      {
-        name: 'personal-content_canvas-optimization',
-        path: '/personal-content/canvas-optimization',
-        component: 'view.personal-content_canvas-optimization',
-        meta: {
-          title: 'personal-content_canvas-optimization',
-          i18nKey: 'route.personal-content_canvas-optimization',
-          order: 11,
-          icon: 'material-symbols:data-table-outline'
-        }
-      },
+      }
     ]
   },
   {

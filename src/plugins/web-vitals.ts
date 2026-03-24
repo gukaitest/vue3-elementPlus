@@ -14,23 +14,6 @@ export interface WebVitalsData {
   navigationType: string;
 }
 
-// 长任务数据接口
-export interface LongTaskData {
-  name: string;
-  duration: number;
-  startTime: number;
-  attribution?: Array<{
-    name: string;
-    entryType: string;
-    startTime: number;
-    duration: number;
-    containerType?: string;
-    containerSrc?: string;
-    containerId?: string;
-    containerName?: string;
-  }>;
-}
-
 // 内存泄漏数据接口
 export interface MemoryLeakData {
   name: string;
@@ -82,7 +65,6 @@ export interface WebVitalsConfig {
     ttfb?: number;
     inp?: number;
     fps?: number; // 添加FPS阈值配置
-    longTask?: number; // 添加长任务阈值配置
   };
   // FPS监控配置
   fpsConfig?: {
@@ -92,17 +74,6 @@ export interface WebVitalsConfig {
     sampleInterval?: number;
     // 是否启用FPS监控
     enabled?: boolean;
-  };
-  // 长任务监控配置
-  longTaskConfig?: {
-    // 是否启用长任务监控
-    enabled?: boolean;
-    // 长任务阈值（毫秒），默认50ms
-    threshold?: number;
-    // 最大记录任务数量
-    maxTasks?: number;
-    // 是否记录详细的任务信息
-    includeAttribution?: boolean;
   };
   // 内存泄漏监控配置
   memoryLeakConfig?: {
@@ -150,7 +121,6 @@ const DEFAULT_THRESHOLDS = {
   ttfb: 800, // 800毫秒
   inp: 200, // 200毫秒
   fps: 30, // 30 FPS
-  longTask: 50, // 50毫秒
   memory: 80, // 80% 内存使用率阈值
   memoryGrowthRate: 1 // 1MB/s 内存增长率阈值
 };
@@ -160,14 +130,6 @@ const DEFAULT_FPS_CONFIG = {
   duration: 10000, // 10秒
   sampleInterval: 100, // 100ms采样一次
   enabled: true
-};
-
-// 默认长任务配置
-const DEFAULT_LONG_TASK_CONFIG = {
-  enabled: true,
-  threshold: 50, // 50ms
-  maxTasks: 100, // 最多记录100个长任务
-  includeAttribution: true
 };
 
 // 默认内存泄漏配置
@@ -211,17 +173,6 @@ let fpsMonitor: {
   sampleStartTime: number; // 每次采样的开始时间（用于FPS计算）
 } | null = null;
 
-// 长任务监控器变量
-let longTaskMonitor: {
-  observer: PerformanceObserver | null;
-  tasks: LongTaskData[];
-  totalTasks: number;
-  totalDuration: number;
-  maxDuration: number;
-  isRunning: boolean;
-  config: typeof DEFAULT_LONG_TASK_CONFIG;
-} | null = null;
-
 // 内存泄漏监控器变量
 let memoryLeakMonitor: {
   intervalId: number | null;
@@ -260,13 +211,6 @@ function getRating(value: number, threshold: number, metric: string = ''): 'good
     return 'poor';
   }
 
-  // 长任务数量越少越好
-  if (metric === 'LongTask') {
-    if (value <= 5) return 'good'; // 5个以下长任务
-    if (value <= 15) return 'needs-improvement'; // 15个以下长任务
-    return 'poor';
-  }
-
   // 内存使用率越低越好
   if (metric === 'Memory') {
     if (value <= 50) return 'good'; // 50%以下内存使用率
@@ -292,7 +236,7 @@ function formatValue(value: number, metric: string): string {
   if (metric === 'CLS') {
     return value.toFixed(3) || '0';
   }
-  if (metric === 'INP' || metric === 'LongTask') {
+  if (metric === 'INP') {
     return `${Math.round(value)}ms`;
   }
   if (metric === 'LCP' || metric === 'FCP' || metric === 'TTFB') {
@@ -302,148 +246,6 @@ function formatValue(value: number, metric: string): string {
     return `${Math.round(value)}fps`;
   }
   return value.toString();
-}
-
-// 启动长任务监控
-function startLongTaskMonitoring(config: WebVitalsConfig) {
-  const longTaskConfig = { ...DEFAULT_LONG_TASK_CONFIG, ...config.longTaskConfig };
-
-  if (!longTaskConfig.enabled) return;
-
-  // 检查浏览器是否支持PerformanceObserver和longtask
-  if (!('PerformanceObserver' in window)) {
-    console.warn('PerformanceObserver is not supported in this browser');
-    return;
-  }
-
-  try {
-    longTaskMonitor = {
-      observer: null,
-      tasks: [],
-      totalTasks: 0,
-      totalDuration: 0,
-      maxDuration: 0,
-      isRunning: true,
-      config: longTaskConfig
-    };
-
-    const observer = new PerformanceObserver(list => {
-      if (!longTaskMonitor || !longTaskMonitor.isRunning) return;
-
-      const entries = list.getEntries();
-
-      for (const entry of entries) {
-        if (entry.entryType === 'longtask' && entry.duration >= longTaskConfig.threshold) {
-          longTaskMonitor.totalTasks++;
-          longTaskMonitor.totalDuration += entry.duration;
-          longTaskMonitor.maxDuration = Math.max(longTaskMonitor.maxDuration, entry.duration);
-
-          const longTaskData: LongTaskData = {
-            name: entry.name || 'unknown',
-            duration: entry.duration,
-            startTime: entry.startTime
-          };
-
-          // 如果需要记录详细的任务信息
-          if (longTaskConfig.includeAttribution && (entry as any).attribution) {
-            longTaskData.attribution = (entry as any).attribution.map((attr: any) => ({
-              name: attr.name || 'unknown',
-              entryType: attr.entryType || 'unknown',
-              startTime: attr.startTime || 0,
-              duration: attr.duration || 0,
-              containerType: attr.containerType,
-              containerSrc: attr.containerSrc,
-              containerId: attr.containerId,
-              containerName: attr.containerName
-            }));
-          }
-
-          // 只保留最新的长任务记录
-          if (longTaskMonitor.tasks.length >= longTaskConfig.maxTasks) {
-            longTaskMonitor.tasks.shift();
-          }
-          longTaskMonitor.tasks.push(longTaskData);
-
-          // 实时上报每个长任务
-          const data: WebVitalsData = {
-            name: 'LongTask',
-            value: entry.duration,
-            rating: getRating(entry.duration, longTaskConfig.threshold, 'LongTask'),
-            delta: 0,
-            id: `longtask-${Date.now()}-${Math.random()}`,
-            navigationType: 'navigate'
-          };
-
-          // 添加长任务详细信息
-          (data as any).longTaskData = longTaskData;
-          (data as any).longTaskStats = {
-            totalTasks: longTaskMonitor.totalTasks,
-            totalDuration: longTaskMonitor.totalDuration,
-            averageDuration: longTaskMonitor.totalDuration / longTaskMonitor.totalTasks,
-            maxDuration: longTaskMonitor.maxDuration
-          };
-
-          if (config.enableConsoleLog) {
-            console.warn(`⚠️ 检测到长任务: ${entry.duration.toFixed(2)}ms`, longTaskData);
-          }
-
-          handleWebVitalsData(data, config);
-        }
-      }
-    });
-
-    observer.observe({ entryTypes: ['longtask'] });
-    longTaskMonitor.observer = observer;
-
-    console.log('✅ 长任务监控已启动，阈值:', longTaskConfig.threshold, 'ms');
-  } catch (error) {
-    console.warn('Failed to start long task monitoring:', error);
-  }
-}
-
-// 停止长任务监控
-function stopLongTaskMonitoring(config: WebVitalsConfig) {
-  if (!longTaskMonitor || !longTaskMonitor.isRunning) return;
-
-  longTaskMonitor.isRunning = false;
-
-  if (longTaskMonitor.observer) {
-    longTaskMonitor.observer.disconnect();
-  }
-
-  // 生成长任务汇总报告
-  if (longTaskMonitor.totalTasks > 0) {
-    const averageDuration = longTaskMonitor.totalDuration / longTaskMonitor.totalTasks;
-
-    const summaryData: WebVitalsData = {
-      name: 'LongTaskSummary',
-      value: longTaskMonitor.totalTasks,
-      rating: getRating(longTaskMonitor.totalTasks, 10, 'LongTask'),
-      delta: 0,
-      id: `longtask-summary-${Date.now()}`,
-      navigationType: 'navigate'
-    };
-
-    // 添加汇总统计信息
-    (summaryData as any).longTaskSummary = {
-      totalTasks: longTaskMonitor.totalTasks,
-      totalDuration: longTaskMonitor.totalDuration,
-      averageDuration,
-      maxDuration: longTaskMonitor.maxDuration,
-      tasks: longTaskMonitor.tasks.slice(-10) // 只保留最近10个长任务的详细信息
-    };
-
-    console.log('📊 长任务监控汇总:', {
-      totalTasks: longTaskMonitor.totalTasks,
-      totalDuration: `${longTaskMonitor.totalDuration.toFixed(2)}ms`,
-      averageDuration: `${averageDuration.toFixed(2)}ms`,
-      maxDuration: `${longTaskMonitor.maxDuration.toFixed(2)}ms`
-    });
-
-    handleWebVitalsData(summaryData, config);
-  }
-
-  longTaskMonitor = null;
 }
 
 // 启动内存泄漏监控
@@ -499,15 +301,18 @@ function startMemoryLeakMonitoring(config: WebVitalsConfig) {
         memoryLeakMonitor.baselineMemory = memory.usedJSHeapSize;
       }
 
-      // 计算泄漏评分 (0-100)
-      const memoryGrowth = memory.usedJSHeapSize - (memoryLeakMonitor.baselineMemory || 0);
+      // 泄漏启发式（与 DevTools/常见 RUM 一致）：用「相对基准的堆净增长 / 经过时间」得到 MB/分钟，与阈值同量纲比较。
+      // 注意：usedJSHeapSize 会波动（GC、缓存），高占用 ≠ 泄漏；评分上增长率为主、压力为辅。
+      const memoryGrowthBytes = memory.usedJSHeapSize - (memoryLeakMonitor.baselineMemory || 0);
+      const elapsedMs = Math.max(elapsed, 1);
+      const elapsedMin = elapsedMs / 60000;
+      const growthRateMBPerMin = memoryGrowthBytes / (1024 * 1024) / elapsedMin;
 
-      const growthRate = memoryGrowth / ((elapsed || 1) / 60000); // MB/分钟
-      // 改进的泄漏评分计算：
-      // 1. 内存增长率评分 (0-70分) - 主要指标
-      const growthScore = Math.min(70, Math.max(0, (growthRate / memoryConfig.growthRateThreshold) * 70));
-      // 2. 内存使用率评分 (0-30分) - 辅助指标
-      const usageScore = Math.min(30, Math.max(0, (memoryData.memoryUsage / 100) * 30));
+      // 1. 增长率评分 (0–70)：相对 growthRateThreshold（MB/分钟）归一化，≥ 阈值满分
+      const growthScore = Math.min(70, Math.max(0, (growthRateMBPerMin / memoryConfig.growthRateThreshold) * 70));
+      // 2. 堆压力 (0–30)：仅在高占用时加分，避免「正常占用」抬高泄漏分（与「泄漏=持续增长」的常规定义区分）
+      const usageHeadroom = Math.max(0, memoryData.memoryUsage - 50) / 50;
+      const usageScore = Math.min(30, Math.max(0, usageHeadroom * 30));
       // 3. 综合评分
       memoryData.leakScore = Math.round(growthScore + usageScore);
 
@@ -519,16 +324,17 @@ function startMemoryLeakMonitoring(config: WebVitalsConfig) {
         memoryLeakMonitor.samples.shift();
       }
 
-      // 计算趋势
+      // 趋势：最近 3 点按时间跨度换算为 MB/分钟斜率，与 growthRateThreshold 同量纲（修复原先「字节/采样间隔 vs MB/分钟」混用）
+      let shortTermSlopeMBPerMin: number | null = null;
       if (memoryLeakMonitor.samples.length >= 3) {
         const recent = memoryLeakMonitor.samples.slice(-3);
-        const trend = recent[2].usedJSHeapSize - recent[0].usedJSHeapSize;
-        const avgGrowth = trend / 2;
+        const dtMin = Math.max((recent[2].timestamp - recent[0].timestamp) / 60000, 1e-6);
+        const dBytes = recent[2].usedJSHeapSize - recent[0].usedJSHeapSize;
+        shortTermSlopeMBPerMin = dBytes / (1024 * 1024) / dtMin;
 
-        if (avgGrowth > memoryConfig.growthRateThreshold * 1024 * 1024) {
-          // 转换为字节
+        if (shortTermSlopeMBPerMin > memoryConfig.growthRateThreshold) {
           memoryData.trend = 'increasing';
-        } else if (avgGrowth < -memoryConfig.growthRateThreshold * 1024 * 1024) {
+        } else if (shortTermSlopeMBPerMin < -memoryConfig.growthRateThreshold) {
           memoryData.trend = 'decreasing';
         } else {
           memoryData.trend = 'stable';
@@ -585,7 +391,26 @@ function startMemoryLeakMonitoring(config: WebVitalsConfig) {
           );
         }
         if (isMemoryLeakDetected) {
-          console.error(`🚨 检测到潜在内存泄漏! 泄漏评分: ${memoryData.leakScore.toFixed(2)}`);
+          const usedMB = memoryData.usedJSHeapSize / (1024 * 1024);
+          const limitMB = memory.jsHeapSizeLimit / (1024 * 1024);
+          const growthMB = memoryGrowthBytes / (1024 * 1024);
+          const slopePart =
+            typeof shortTermSlopeMBPerMin === 'number'
+              ? `最近窗口堆斜率约 ${shortTermSlopeMBPerMin.toFixed(2)} MB/分钟（阈值 ${memoryConfig.growthRateThreshold} MB/分钟）。`
+              : '';
+          // performance.memory 无法定位到具体代码路径；以下为与当前启发式一致的说明 + 常见根因排查方向
+          const leakHeuristicReason = [
+            `当前 JS 堆占用 ${memoryData.memoryUsage.toFixed(2)}%（已用 ${usedMB.toFixed(2)} MB / 堆上限约 ${limitMB.toFixed(2)} MB）。`,
+            `泄漏评分 ${memoryData.leakScore}（>50）且短期趋势为 increasing：相对监控起点净变化 ${growthMB >= 0 ? '+' : ''}${growthMB.toFixed(2)} MB，折算平均约 ${growthRateMBPerMin.toFixed(2)} MB/分钟（阈值 ${memoryConfig.growthRateThreshold} MB/分钟）。`,
+            slopePart,
+            `评分明细：增长项约 ${Math.round(growthScore)}/70，堆压力项约 ${Math.round(usageScore)}/30。`,
+            `API 无法直接给出「泄漏代码行」；常见原因需结合 Heap Snapshot 排查：未移除的监听/定时器、闭包或全局变量持有大对象、缓存/Map/数组只增不减、组件卸载后仍被引用、第三方脚本长期持有 DOM 等。`
+          ]
+            .filter(Boolean)
+            .join(' ');
+
+          console.error(`🚨 检测到潜在内存泄漏 | ${leakHeuristicReason}`);
+          (webVitalsData as any).memoryStats.leakHeuristicReason = leakHeuristicReason;
         }
         handleWebVitalsData(webVitalsData, config);
       }
@@ -790,34 +615,6 @@ function logToConsole(data: WebVitalsData, config: WebVitalsConfig) {
       min: `${stats.min}fps`,
       max: `${stats.max}fps`,
       samples: stats.samples
-    });
-  }
-
-  // 如果是长任务，显示任务详细信息
-  if (name === 'LongTask' && (data as any).longTaskData) {
-    const taskData = (data as any).longTaskData;
-    const taskStats = (data as any).longTaskStats;
-    console.log('Long Task Details:', {
-      duration: `${taskData.duration.toFixed(2)}ms`,
-      startTime: `${taskData.startTime.toFixed(2)}ms`,
-      attribution: taskData.attribution
-    });
-    console.log('Long Task Stats:', {
-      totalTasks: taskStats.totalTasks,
-      totalDuration: `${taskStats.totalDuration.toFixed(2)}ms`,
-      averageDuration: `${taskStats.averageDuration.toFixed(2)}ms`,
-      maxDuration: `${taskStats.maxDuration.toFixed(2)}ms`
-    });
-  }
-
-  // 如果是长任务汇总，显示汇总信息
-  if (name === 'LongTaskSummary' && (data as any).longTaskSummary) {
-    const summary = (data as any).longTaskSummary;
-    console.log('Long Task Summary:', {
-      totalTasks: summary.totalTasks,
-      totalDuration: `${summary.totalDuration.toFixed(2)}ms`,
-      averageDuration: `${summary.averageDuration.toFixed(2)}ms`,
-      maxDuration: `${summary.maxDuration.toFixed(2)}ms`
     });
   }
 
@@ -1071,7 +868,6 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
     enableReport: false,
     thresholds: DEFAULT_THRESHOLDS,
     fpsConfig: DEFAULT_FPS_CONFIG,
-    longTaskConfig: DEFAULT_LONG_TASK_CONFIG,
     memoryLeakConfig: DEFAULT_MEMORY_LEAK_CONFIG,
     memoryConfig: DEFAULT_MEMORY_CONFIG,
     batchConfig: DEFAULT_BATCH_CONFIG,
@@ -1172,9 +968,6 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
     handleWebVitalsData(data, finalConfig);
   });
 
-  // 启动长任务监控
-  startLongTaskMonitoring(finalConfig);
-
   // 启动内存泄漏监控
   startMemoryLeakMonitoring(finalConfig);
 
@@ -1184,7 +977,7 @@ export function setupWebVitals(config: WebVitalsConfig = {}) {
   // 启动FPS监控（可选）
   // startFPSMonitoring(finalConfig);
 
-  console.log('🚀 Web Vitals monitoring initialized (including Long Tasks, Memory Leak and FPS)');
+  console.log('🚀 Web Vitals monitoring initialized (Memory Leak; FPS optional)');
 }
 
 // 获取当前页面的Web Vitals数据
@@ -1351,45 +1144,6 @@ export function stopFPSMonitor() {
     }
     fpsMonitor = null;
   }
-}
-
-// 手动启动长任务监控
-export function startLongTaskMonitor(config: WebVitalsConfig = {}) {
-  const finalConfig = {
-    enableConsoleLog: true,
-    enableReport: true,
-    thresholds: DEFAULT_THRESHOLDS,
-    longTaskConfig: DEFAULT_LONG_TASK_CONFIG,
-    ...config
-  };
-  console.log('🔍 启动长任务监控，配置:', finalConfig.longTaskConfig);
-  startLongTaskMonitoring(finalConfig);
-}
-
-// 手动停止长任务监控
-export function stopLongTaskMonitor() {
-  const defaultConfig = {
-    enableConsoleLog: true,
-    enableReport: true,
-    thresholds: DEFAULT_THRESHOLDS,
-    reportUrl: getReportUrl()
-  };
-  stopLongTaskMonitoring(defaultConfig);
-}
-
-// 获取长任务统计信息
-export function getLongTaskStats() {
-  if (!longTaskMonitor) {
-    return null;
-  }
-
-  return {
-    totalTasks: longTaskMonitor.totalTasks,
-    totalDuration: longTaskMonitor.totalDuration,
-    averageDuration: longTaskMonitor.totalTasks > 0 ? longTaskMonitor.totalDuration / longTaskMonitor.totalTasks : 0,
-    maxDuration: longTaskMonitor.maxDuration,
-    recentTasks: longTaskMonitor.tasks.slice(-5) // 最近5个任务
-  };
 }
 
 // 手动启动内存泄漏监控

@@ -39,7 +39,7 @@ const props = withDefaults(
     teleported: true,
     listMaxHeight: 280,
     minItemSize: 52,
-    fetchPageSize: 99999,
+    fetchPageSize: 10000,
     popoverWidth: 320
   }
 );

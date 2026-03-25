@@ -48,7 +48,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   options: () => [],
   useProductListApi: false,
-  fetchPageSize: 10000,
+  fetchPageSize: 5000,
   labelKey: 'label',
   valueKey: 'value',
   placeholder: '请选择',

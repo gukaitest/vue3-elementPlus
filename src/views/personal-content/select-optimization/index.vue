@@ -23,14 +23,16 @@ const virtualProductDynamic = ref<number | null>(null);
 
     <ElTabPane label="vue-virtual-scroller优化" name="second">
       <div v-if="activeName === 'second'" class="flex flex-col gap-16px">
-        <VueVirtualScroller
+        <!--
+ <VueVirtualScroller
           v-model="virtualSelectValue"
           use-product-list-api
           filterable
           clearable
           placeholder="单选（虚拟列表）"
           class="w-280px"
-        />
+        /> 
+-->
         <VueVirtualScroller
           v-model="virtualSelectMulti"
           use-product-list-api
